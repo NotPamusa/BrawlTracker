@@ -27,6 +27,9 @@ export const metadata: Metadata = {
   },
 };
 
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -36,8 +39,15 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${lilitaOne.variable} ${nunito.variable} h-full antialiased`}
+      data-scroll-behavior="smooth"
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col bg-[var(--brawl-bg-deep)]">
+        <Navbar />
+        <div className="flex-grow flex flex-col">
+          {children}
+        </div>
+        <Footer />
+      </body>
     </html>
   );
 }

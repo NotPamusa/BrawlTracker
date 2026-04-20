@@ -1,11 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 
 export default function Navbar() {
   const router = useRouter();
   const [tag, setTag] = useState("");
+  const [user, setUser] = useState<any>(null);
+  const supabase = createClient();
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase.auth]);
 
   function handleTagChange(e: React.ChangeEvent<HTMLInputElement>) {
     let val = e.target.value.toUpperCase().replace(/\s/g, "");
@@ -34,7 +51,7 @@ export default function Navbar() {
         {/* Logo */}
         <button
           onClick={() => router.push("/")}
-          className="flex items-center shrink-0 cursor-pointer bg-transparent border-none"
+          className="flex items-center shrink-0 cursor-pointer bg-transparent border-none outline-none"
           id="nav-logo"
         >
           <span className="text-xl sm:text-2xl font-display font-bold tracking-wide text-[var(--brawl-text)]">
@@ -63,17 +80,37 @@ export default function Navbar() {
             </div>
           </form>
 
-          {/* Login button — hexagonal */}
-          <div className="hex-btn-wrap shrink-0">
-            <button
-              className="hex-btn"
-              id="nav-login-btn"
-            >
-              <div className="hex-btn-inner text-sm">
-                Log&nbsp;In
+          {/* User Auth Section */}
+          {user ? (
+            <div className="hex-btn-wrap shrink-0">
+              <div 
+                className="cursor-pointer" 
+                onClick={() => router.push("/profile")} 
+                id="nav-profile-btn"
+              >
+                <div className="chamfer-btn-primary chamfer-xs !p-[2px]">
+                  <div className="btn-inner chamfer-xs !py-1.5 !px-3 flex items-center justify-center">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  </div>
+                </div>
               </div>
-            </button>
-          </div>
+            </div>
+          ) : (
+            <div className="hex-btn-wrap shrink-0">
+              <button
+                className="hex-btn"
+                id="nav-login-btn"
+                onClick={() => router.push("/login")}
+              >
+                <div className="hex-btn-inner text-sm">
+                  Log&nbsp;In
+                </div>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </nav>

@@ -1,5 +1,3 @@
-import Navbar from "@/components/Navbar";
-
 interface PlayerPageProps {
   params: Promise<{ tag: string }>;
 }
@@ -8,9 +6,7 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
   const { tag } = await params;
 
   return (
-    <>
-      <Navbar />
-      <main className="flex flex-col flex-1 items-center pt-28 px-4 sm:px-6 relative z-10">
+    <main className="flex flex-col flex-1 items-center pt-28 px-4 sm:px-6 relative z-10">
         <div className="brawl-card p-8 sm:p-12 max-w-2xl w-full text-center">
           <h1 className="text-2xl sm:text-3xl font-display font-bold text-[var(--brawl-yellow)]">
             Player #{tag}
