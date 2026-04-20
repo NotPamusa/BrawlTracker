@@ -1,26 +1,428 @@
 @import "tailwindcss";
 
+/* ========================================
+   BrawlToMax — Sci-Fi Military HUD Theme
+   Deep Space aesthetic with chamfered edges
+   ======================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Deep space base */
+  --brawl-bg-deep: #060d18;
+  --brawl-bg: #0b1628;
+  --brawl-bg-card: #0f1d33;
+  --brawl-bg-card-inner: #0a1525;
+  --brawl-bg-elevated: #132640;
+  --brawl-border: #1a3050;
+  --brawl-border-bright: #245080;
+  --brawl-border-dim: #0e1e35;
+
+  /* Accent colors — segmented */
+  --brawl-cyan: #14ffff;
+  --brawl-yellow: #ffd700;
+  --brawl-green: #4cff50;
+  --brawl-purple: #c77dff;
+  --brawl-pink: #ff6b9d;
+  --brawl-orange: #ff9f1c;
+  --brawl-red: #ff4a4a;
+
+  /* Teal glow (hero search only) */
+  --glow-teal: 0 0 15px rgba(20, 255, 255, 0.3);
+  --glow-teal-strong: 0 0 25px rgba(20, 255, 255, 0.45), 0 0 50px rgba(20, 255, 255, 0.15);
+  --glow-cyan-btn: 0 0 12px rgba(20, 255, 255, 0.4), 0 0 30px rgba(20, 255, 255, 0.15);
+
+  /* Card accent borders */
+  --card-free-border: #c77dff;
+  --card-free-border-dim: #6a3d8f;
+  --card-free-bg: #1a0e2e;
+  --card-free-bg-inner: #120a20;
+
+  --card-pass-border: #ffd700;
+  --card-pass-border-dim: #8a7200;
+  --card-pass-bg: #2a1e05;
+  --card-pass-bg-inner: #1e1503;
+
+  --card-whale-border: #4cff50;
+  --card-whale-border-dim: #1a7a1c;
+  --card-whale-bg: #0a2a12;
+  --card-whale-bg-inner: #07200d;
+
+  /* Text */
+  --brawl-text: #e2e8f0;
+  --brawl-text-muted: #7b8faa;
+  --brawl-text-dim: #4a5f7a;
+
+  /* Misc */
+  --brawl-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--brawl-bg);
+  --color-foreground: var(--brawl-text);
+  --color-brawl-yellow: var(--brawl-yellow);
+  --color-brawl-cyan: var(--brawl-cyan);
+  --color-brawl-green: var(--brawl-green);
+  --color-brawl-red: var(--brawl-red);
+  --color-brawl-purple: var(--brawl-purple);
+  --color-brawl-orange: var(--brawl-orange);
+  --color-brawl-card: var(--brawl-bg-card);
+  --color-brawl-border: var(--brawl-border);
+  --font-display: var(--font-display-family);
+  --font-sans: var(--font-body-family);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ========================================
+   Base
+   ======================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--brawl-bg-deep);
+  color: var(--brawl-text);
+  font-family: var(--font-body-family), system-ui, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Single subtle center radial — not blobs */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 900px 700px at 50% 30%,
+    rgba(15, 35, 65, 0.6),
+    transparent
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ========================================
+   Chamfered Corner Clip-Paths
+   ======================================== */
+
+.chamfer-xs {
+  clip-path: polygon(
+    6px 0%, calc(100% - 6px) 0%,
+    100% 6px, 100% calc(100% - 6px),
+    calc(100% - 6px) 100%, 6px 100%,
+    0% calc(100% - 6px), 0% 6px
+  );
+}
+
+.chamfer-sm {
+  clip-path: polygon(
+    10px 0%, calc(100% - 10px) 0%,
+    100% 10px, 100% calc(100% - 10px),
+    calc(100% - 10px) 100%, 10px 100%,
+    0% calc(100% - 10px), 0% 10px
+  );
+}
+
+.chamfer-md {
+  clip-path: polygon(
+    14px 0%, calc(100% - 14px) 0%,
+    100% 14px, 100% calc(100% - 14px),
+    calc(100% - 14px) 100%, 14px 100%,
+    0% calc(100% - 14px), 0% 14px
+  );
+}
+
+.chamfer-lg {
+  clip-path: polygon(
+    20px 0%, calc(100% - 20px) 0%,
+    100% 20px, 100% calc(100% - 20px),
+    calc(100% - 20px) 100%, 20px 100%,
+    0% calc(100% - 20px), 0% 20px
+  );
+}
+
+/* ========================================
+   Inset / Recessed Panels
+   ======================================== */
+
+.inset-panel {
+  background: var(--brawl-bg-deep);
+  border-bottom: 2px solid var(--brawl-border);
+  box-shadow:
+    inset 0 -4px 12px rgba(0, 0, 0, 0.5),
+    inset 0 2px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* ========================================
+   Button Styles
+   ======================================== */
+
+.brawl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  font-weight: 700;
+  font-family: var(--font-display-family), system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 2px solid transparent;
+  background: transparent;
+  color: var(--brawl-text);
+}
+
+.brawl-btn-primary {
+  background: var(--brawl-bg-elevated);
+  color: var(--brawl-cyan);
+  border-color: var(--brawl-cyan);
+  box-shadow: var(--glow-cyan-btn);
+}
+
+.brawl-btn-primary:hover {
+  background: rgba(20, 255, 255, 0.12);
+  box-shadow: var(--glow-teal-strong);
+}
+
+.brawl-btn-secondary {
+  background: transparent;
+  color: var(--brawl-text-muted);
+  border: 2px solid var(--brawl-border);
+}
+
+.brawl-btn-secondary:hover {
+  border-color: var(--brawl-border-bright);
+  color: var(--brawl-text);
+}
+
+/* Secondary Button Wrapper (Chamfered) */
+.chamfer-btn-secondary {
+  background: var(--brawl-border);
+  transition: background 0.2s ease;
+  cursor: pointer;
+  border: none;
+  padding: 2px;
+  display: inline-flex;
+}
+.chamfer-btn-secondary:hover {
+  background: var(--brawl-border-bright);
+}
+.chamfer-btn-secondary .btn-inner {
+  background: var(--brawl-bg-deep);
+  color: var(--brawl-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.25rem;
+  font-weight: 700;
+  font-family: var(--font-display-family), system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  width: 100%;
+}
+.chamfer-btn-secondary:hover .btn-inner {
+  color: var(--brawl-text);
+}
+
+/* Primary Button Wrapper (Chamfered) */
+.chamfer-btn-primary {
+  background: var(--brawl-cyan);
+  cursor: pointer;
+  border: none;
+  padding: 2px;
+  display: inline-flex;
+}
+.chamfer-btn-primary .btn-inner {
+  background: var(--brawl-bg-elevated);
+  color: var(--brawl-cyan);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.25rem;
+  font-weight: 700;
+  font-family: var(--font-display-family), system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition: background 0.2s ease;
+  width: 100%;
+}
+.chamfer-btn-primary:hover .btn-inner {
+  background: rgba(20, 255, 255, 0.12);
+}
+
+/* Input Wrapper (Chamfered) */
+.chamfer-input-wrap {
+  background: var(--brawl-border);
+  padding: 2px;
+  transition: background 0.2s ease;
+}
+.chamfer-input-wrap:focus-within {
+  background: var(--brawl-border-bright);
+}
+.chamfer-input-bg {
+  background: var(--brawl-bg-deep);
+  height: 100%;
+}
+.chamfer-input-core {
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  color: var(--brawl-text);
+}
+.chamfer-input-core::placeholder {
+  color: var(--brawl-text-dim);
+}
+
+/* ========================================
+   Input Styles
+   ======================================== */
+
+.brawl-input {
+  background: var(--brawl-bg-deep);
+  border: 2px solid var(--brawl-border);
+  color: var(--brawl-text);
+  padding: 0.6rem 0.9rem;
+  font-size: 0.875rem;
+  transition: border-color 0.25s ease;
+  outline: none;
+  width: 100%;
+}
+
+.brawl-input::placeholder {
+  color: var(--brawl-text-dim);
+}
+
+.brawl-input:focus {
+  border-color: var(--brawl-border-bright);
+}
+
+/* ========================================
+   Hero Search Bar — CSS border approach
+   ======================================== */
+
+.hero-search-wrap {
+  position: relative;
+  filter: drop-shadow(0 0 15px rgba(20, 255, 255, 0.25));
+  transition: filter 0.3s ease;
+  width: 100%;
+}
+
+.hero-search-wrap:focus-within {
+  filter: drop-shadow(0 0 25px rgba(20, 255, 255, 0.5));
+}
+
+.hero-search-border {
+  background: var(--brawl-cyan);
+  padding: 3px;
+  width: 100%;
+}
+
+.hero-search-bg {
+  background: var(--brawl-bg-deep);
+  width: 100%;
+}
+
+/* ========================================
+   Login Button — angled hex shape with SVG border 
+   ======================================== */
+
+.hex-btn-wrap {
+  filter: drop-shadow(0 0 10px rgba(20, 255, 255, 0.15));
+  transition: filter 0.2s ease;
+}
+
+.hex-btn-wrap:hover {
+  filter: drop-shadow(0 0 15px rgba(20, 255, 255, 0.35));
+}
+
+.hex-btn {
+  position: relative;
+  background: var(--brawl-cyan);
+  border: none;
+  padding: 2px;
+  cursor: pointer;
+  clip-path: polygon(
+    14px 0%, calc(100% - 14px) 0%,
+    100% 50%,
+    calc(100% - 14px) 100%, 14px 100%,
+    0% 50%
+  );
+}
+
+.hex-btn-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.4rem 1.7rem;
+  font-weight: 700;
+  font-family: var(--font-display-family), system-ui, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--brawl-cyan);
+  background: linear-gradient(0deg, rgba(20, 255, 255, 0.06), rgba(20, 255, 255, 0.06)), var(--brawl-bg-deep);
+  clip-path: polygon(
+    13px 0%, calc(100% - 13px) 0%,
+    100% 50%,
+    calc(100% - 13px) 100%, 13px 100%,
+    0% 50%
+  );
+  transition: background 0.2s ease;
+}
+
+.hex-btn:hover .hex-btn-inner {
+  background: linear-gradient(0deg, rgba(20, 255, 255, 0.15), rgba(20, 255, 255, 0.15)), var(--brawl-bg-deep);
+}
+
+
+/* ========================================
+   Animations
+   ======================================== */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes searchGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 15px rgba(20, 255, 255, 0.25));
+  }
+  50% {
+    filter: drop-shadow(0 0 25px rgba(20, 255, 255, 0.45));
+  }
+}
+
+.animate-search-glow {
+  animation: searchGlow 3s ease-in-out infinite;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.animate-fade-in-up-delay-1 {
+  animation: fadeInUp 0.5s ease-out 0.1s forwards;
+  opacity: 0;
+}
+
+.animate-fade-in-up-delay-2 {
+  animation: fadeInUp 0.5s ease-out 0.2s forwards;
+  opacity: 0;
+}
+
+.animate-fade-in-up-delay-3 {
+  animation: fadeInUp 0.5s ease-out 0.3s forwards;
+  opacity: 0;
 }
