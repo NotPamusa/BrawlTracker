@@ -30,6 +30,5 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
           </div>
         </div>
       </main>
-    </>
-  );
-}
+    );
+  }
