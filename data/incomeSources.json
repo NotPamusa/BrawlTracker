@@ -1,0 +1,176 @@
+{
+  "incomeSources": {
+    "brawlPass": {
+      "daysPerCycle": 30.4,
+      "tiers": {
+        "free": {
+          "resources": {
+            "coins": 17846,
+            "powerPoints": 9328,
+            "credits": 1953,
+            "bling": 200,
+            "gems": 80,
+            "brawlerKey": 0,
+            "resourceKey": 1,
+            "buffieKey": 1
+          }
+        },
+        "regular": {
+          "resources": {
+            "coins": 28819,
+            "powerPoints": 15005,
+            "credits": 5562,
+            "bling": 3400,
+            "gems": 130,
+            "brawlerKey": 1,
+            "resourceKey": 2,
+            "buffieKey": 1
+          }
+        },
+        "plus": {
+          "resources": {
+            "coins": 32819,
+            "powerPoints": 20505,
+            "credits": 6512,
+            "bling": 4900,
+            "gems": 230,
+            "brawlerKey": 2,
+            "resourceKey": 3,
+            "buffieKey": 2
+          }
+        }
+      },
+      "tail": {
+        "resources": {
+          "coins": 50,
+          "powerPoints": 20,
+          "credits": 20,
+          "bling": 20,
+          "gems": 0,
+          "brawlerKey": 0,
+          "resourceKey": 0,
+          "buffieKey": 0
+        }
+      }
+    },
+    "rankedPass": {
+      "daysPerCycle": 91.3,
+      "tiers": {
+        "free": {
+          "resources": {
+            "coins": 6126,
+            "powerPoints": 221,
+            "credits": 139,
+            "bling": 3400,
+            "gems": 50,
+            "brawlerKey": 0,
+            "resourceKey": 0,
+            "buffieKey": 0
+          }
+        },
+        "pro": {
+          "resources": {
+            "coins": 16126,
+            "powerPoints": 221,
+            "credits": 139,
+            "bling": 3400,
+            "gems": 650,
+            "brawlerKey": 0,
+            "resourceKey": 0,
+            "buffieKey": 0
+          }
+        }
+      },
+      "tail": {
+        "resources": {
+          "coins": 70,
+          "powerPoints": 14,
+          "credits": 9,
+          "bling": 0,
+          "gems": 0,
+          "brawlerKey": 0,
+          "resourceKey": 0,
+          "buffieKey": 0
+        }
+      }
+    },
+    "dailyActivity": {
+      "daysPerCycle": 1,
+      "resources": {
+        "coins": 820,
+        "powerPoints": 155,
+        "credits": 108,
+        "bling": 10,
+        "gems": 0,
+        "brawlerKey": 0,
+        "resourceKey": 0,
+        "buffieKey": 0
+      }
+    },
+    "shopFreebie": {
+      "daysPerCycle": 1,
+      "resources": {
+        "coins": 20,
+        "powerPoints": 15,
+        "credits": 5,
+        "bling": 0,
+        "gems": 0,
+        "brawlerKey": 0,
+        "resourceKey": 0,
+        "buffieKey": 0
+      }
+    },
+    "championshipChallenge": {
+      "daysPerCycle": 30.4,
+      "resources": {
+        "coins": 2325,
+        "powerPoints": 434,
+        "credits": 352,
+        "bling": 0,
+        "gems": 0,
+        "brawlerKey": 0,
+        "resourceKey": 0,
+        "buffieKey": 0
+      }
+    },
+    "megaPig": {
+      "daysPerCycle": 30.4,
+      "resources": {
+        "coins": 1918,
+        "powerPoints": 489,
+        "credits": 174,
+        "bling": 106,
+        "gems": 0,
+        "brawlerKey": 0,
+        "resourceKey": 0,
+        "buffieKey": 0
+      }
+    },
+    "newBrawlerEvent": {
+      "daysPerCycle": 30.4,
+      "resources": {
+        "coins": 4191,
+        "powerPoints": 1747,
+        "credits": 560,
+        "bling": 238,
+        "gems": 0,
+        "brawlerKey": 0,
+        "resourceKey": 0,
+        "buffieKey": 0
+      }
+    },
+    "totalRushes": {
+      "daysPerCycle": 10,
+      "resources": {
+        "coins": 3130,
+        "powerPoints": 1561,
+        "credits": 290,
+        "bling": 0,
+        "gems": 0,
+        "brawlerKey": 0,
+        "resourceKey": 0,
+        "buffieKey": 0
+      }
+    }
+  }
+}
