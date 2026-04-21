@@ -145,7 +145,9 @@ export function parseProgressionState(player: PlayerStats) {
     brawlers_with_hypercharge: brawlersWithHc,
     total_hypercharges: hcCount,
     brawlers_with_buffie: brawlersWithBuffie,
-    total_buffies: buffiesCount
+    total_buffies: buffiesCount,
+    stash_coins: 0,
+    stash_power_points: 0
   };
 
   return result;
