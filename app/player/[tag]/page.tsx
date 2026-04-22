@@ -132,7 +132,7 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
         {/* Main Estimate - Takes up 1 column on LG displays, full width on small */}
         <div className="lg:col-span-1 flex flex-col">
           <EstimateCard
-            title="ESTIMATED DAYS&#10;TO MAX ACCOUNT"
+            title="ESTIMATED TIME&#10;TO MAX ACCOUNT"
             days={estimate.maxDays}
             borderColor="var(--brawl-cyan)"
             borderColorDim="rgba(20,255,255,0.2)"

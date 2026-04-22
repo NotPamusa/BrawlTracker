@@ -1,0 +1,61 @@
+{
+  "coins": {
+    "coins": 1
+  },
+  "powerPoints": {
+    "powerPoints": 1
+  },
+  "credits": {
+    "credits": 1
+  },
+  "bling": {
+    "bling": 1
+  },
+  "gems": {
+    "gems": 1
+  },
+  "brawlerKey": {
+    "credits": 950
+  },
+  "resourceKey": {
+    "powerPoints": 2000
+  },
+  "buffieorKey": {
+    "coins": 1000,
+    "powerPoints": 2000
+  },
+  "starrDrop": {
+    "coins": 70.4,
+    "powerPoints": 13.8,
+    "credits": 8.7
+  },
+  "epicDrop": {
+    "coins": 70.4,
+    "powerPoints": 13.8,
+    "credits": 8.7
+  },
+  "mythicDrop": {
+    "coins": 70.4,
+    "powerPoints": 13.8,
+    "credits": 8.7
+  },
+  "legendaryDrop": {
+    "coins": 70.4,
+    "powerPoints": 13.8,
+    "credits": 8.7
+  },
+  "chaosDrop": {
+    "coins": 324.2,
+    "powerPoints": 59.2,
+    "credits": 53
+  },
+  "hyperchargeDrop": {
+    "coins": 5000
+  },
+  "rankedDrop": {
+    "bling": 100
+  },
+  "xp": {},
+  "megaBox": {},
+  "": {}
+}

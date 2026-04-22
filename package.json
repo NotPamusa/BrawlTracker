@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint",
+    "sync-data": "venv/bin/cat-numbers -s 'income_model' data/BrawlToMAXIncomeData.numbers > data/income_model.csv && venv/bin/cat-numbers -s 'value_conversions' data/BrawlToMAXIncomeData.numbers > data/value_conversions.csv && node scripts/sync-data.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",
