@@ -41,7 +41,8 @@ function parseCSV(filePath) {
   if (!fs.existsSync(filePath)) return null;
   const content = fs.readFileSync(filePath, 'utf8');
   const lines = content.split(/\r?\n/)
-    .filter(line => line.trim());
+    .filter(line => line.trim())
+    .map(line => line.replace(/^.*:.*:.*: /, ''));
   if (lines.length === 0) return null;
   const separator = lines[0].includes(';') ? ';' : ',';
   const headers = lines[0].split(separator).map(h => h.trim());
