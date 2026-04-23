@@ -1,0 +1,362 @@
+{
+  "incomeSources": {
+    "dailyActivity": {
+      "resources": {
+        "daysPerCycle": 1,
+        "coins": 150,
+        "powerPoints": 0,
+        "credits": 122,
+        "bling": 0,
+        "gems": 0
+      },
+      "modifiers": {
+        "dailyActivityDelta": 1,
+        "challengesDelta": 0,
+        "eventsDelta": 0,
+        "finishQuests": 0,
+        "monthlySpending": 0,
+        "currency": 0,
+        "moneyEfficiency": 0,
+        "gemEfficiency": 0,
+        "isRankedPlayer": 0,
+        "esportsRewards": 0,
+        "nBrawlPass_regular": 0,
+        "nBrawlPass_plus": 0,
+        "proPassMonths": 0
+      }
+    },
+    "dailyFreebie": {
+      "resources": {
+        "daysPerCycle": 1,
+        "coins": 5,
+        "powerPoints": 2,
+        "credits": 2,
+        "bling": 0,
+        "gems": 0.05
+      },
+      "modifiers": {
+        "dailyActivityDelta": 1,
+        "challengesDelta": 0,
+        "eventsDelta": 0,
+        "finishQuests": 0,
+        "monthlySpending": 0,
+        "currency": 0,
+        "moneyEfficiency": 0,
+        "gemEfficiency": 0,
+        "isRankedPlayer": 0,
+        "esportsRewards": 0,
+        "nBrawlPass_regular": 2,
+        "nBrawlPass_plus": 2,
+        "proPassMonths": 0
+      }
+    },
+    "brawlPass": {
+      "tiers": {
+        "free": {
+          "resources": {
+            "daysPerCycle": 30.4,
+            "coins": 12000,
+            "powerPoints": 5000,
+            "credits": 900,
+            "bling": 0,
+            "gems": 50
+          },
+          "modifiers": {
+            "dailyActivityDelta": 0,
+            "challengesDelta": 0,
+            "eventsDelta": 0,
+            "finishQuests": 0,
+            "monthlySpending": 0,
+            "currency": 0,
+            "moneyEfficiency": 0,
+            "gemEfficiency": 0,
+            "isRankedPlayer": 0,
+            "esportsRewards": 0,
+            "nBrawlPass_regular": 0,
+            "nBrawlPass_plus": 0,
+            "proPassMonths": 0
+          }
+        },
+        "regular": {
+          "resources": {
+            "daysPerCycle": 30.4,
+            "coins": 18000,
+            "powerPoints": 10000,
+            "credits": 1500,
+            "bling": 1000,
+            "gems": 150
+          },
+          "modifiers": {
+            "dailyActivityDelta": 0,
+            "challengesDelta": 0,
+            "eventsDelta": 0,
+            "finishQuests": 0,
+            "monthlySpending": 0,
+            "currency": 0,
+            "moneyEfficiency": 0,
+            "gemEfficiency": 0,
+            "isRankedPlayer": 0,
+            "esportsRewards": 0,
+            "nBrawlPass_regular": 0,
+            "nBrawlPass_plus": 0,
+            "proPassMonths": 0
+          }
+        },
+        "plus": {
+          "resources": {
+            "daysPerCycle": 30.4,
+            "coins": 22000,
+            "powerPoints": 15000,
+            "credits": 2500,
+            "bling": 1500,
+            "gems": 250
+          },
+          "modifiers": {
+            "dailyActivityDelta": 0,
+            "challengesDelta": 0,
+            "eventsDelta": 0,
+            "finishQuests": 0,
+            "monthlySpending": 0,
+            "currency": 0,
+            "moneyEfficiency": 0,
+            "gemEfficiency": 0,
+            "isRankedPlayer": 0,
+            "esportsRewards": 0,
+            "nBrawlPass_regular": 0,
+            "nBrawlPass_plus": 0,
+            "proPassMonths": 0
+          }
+        }
+      },
+      "tail": {
+        "resources": {
+          "daysPerCycle": 30.4,
+          "coins": 12,
+          "powerPoints": 10,
+          "credits": 0,
+          "bling": 0,
+          "gems": 0
+        },
+        "modifiers": {
+          "dailyActivityDelta": 0,
+          "challengesDelta": 0,
+          "eventsDelta": 0,
+          "finishQuests": 0,
+          "monthlySpending": 0,
+          "currency": 0,
+          "moneyEfficiency": 0,
+          "gemEfficiency": 0,
+          "isRankedPlayer": 0,
+          "esportsRewards": 0,
+          "nBrawlPass_regular": 0,
+          "nBrawlPass_plus": 0,
+          "proPassMonths": 0
+        }
+      }
+    },
+    "rankedPass": {
+      "tiers": {
+        "free": {
+          "resources": {
+            "daysPerCycle": 120,
+            "coins": 500,
+            "powerPoints": 0,
+            "credits": 0,
+            "bling": 0,
+            "gems": 0
+          },
+          "modifiers": {
+            "dailyActivityDelta": 0,
+            "challengesDelta": 0,
+            "eventsDelta": 0,
+            "finishQuests": 0,
+            "monthlySpending": 0,
+            "currency": 0,
+            "moneyEfficiency": 0,
+            "gemEfficiency": 0,
+            "isRankedPlayer": 0,
+            "esportsRewards": 0,
+            "nBrawlPass_regular": 0,
+            "nBrawlPass_plus": 0,
+            "proPassMonths": 0
+          }
+        },
+        "regular": {
+          "resources": {
+            "daysPerCycle": 120,
+            "coins": 2500,
+            "powerPoints": 1500,
+            "credits": 0,
+            "bling": 0,
+            "gems": 600
+          },
+          "modifiers": {
+            "dailyActivityDelta": 0,
+            "challengesDelta": 0,
+            "eventsDelta": 0,
+            "finishQuests": 0,
+            "monthlySpending": 0,
+            "currency": 0,
+            "moneyEfficiency": 0,
+            "gemEfficiency": 0,
+            "isRankedPlayer": 0,
+            "esportsRewards": 0,
+            "nBrawlPass_regular": 0,
+            "nBrawlPass_plus": 0,
+            "proPassMonths": 0
+          }
+        }
+      },
+      "tail": {
+        "resources": {
+          "daysPerCycle": 120,
+          "coins": 150,
+          "powerPoints": 150,
+          "credits": 0,
+          "bling": 150,
+          "gems": 0
+        },
+        "modifiers": {
+          "dailyActivityDelta": 0,
+          "challengesDelta": 0,
+          "eventsDelta": 0,
+          "finishQuests": 0,
+          "monthlySpending": 0,
+          "currency": 0,
+          "moneyEfficiency": 0,
+          "gemEfficiency": 0,
+          "isRankedPlayer": 0,
+          "esportsRewards": 0,
+          "nBrawlPass_regular": 0,
+          "nBrawlPass_plus": 0,
+          "proPassMonths": 0
+        }
+      }
+    },
+    "megaPig": {
+      "resources": {
+        "daysPerCycle": 30.4,
+        "coins": 1000,
+        "powerPoints": 800,
+        "credits": 200,
+        "bling": 50,
+        "gems": 0.5
+      },
+      "modifiers": {
+        "dailyActivityDelta": 1,
+        "challengesDelta": 0,
+        "eventsDelta": 1,
+        "finishQuests": 0,
+        "monthlySpending": 0,
+        "currency": 0,
+        "moneyEfficiency": 0,
+        "gemEfficiency": 0,
+        "isRankedPlayer": 0,
+        "esportsRewards": 0,
+        "nBrawlPass_regular": 0,
+        "nBrawlPass_plus": 0,
+        "proPassMonths": 0
+      }
+    },
+    "newBrawlerEvent": {
+      "resources": {
+        "daysPerCycle": 20,
+        "coins": 1,
+        "powerPoints": 0,
+        "credits": 0,
+        "bling": 0,
+        "gems": 0
+      },
+      "modifiers": {
+        "dailyActivityDelta": 1,
+        "challengesDelta": 0,
+        "eventsDelta": 1,
+        "finishQuests": 0,
+        "monthlySpending": 0,
+        "currency": 0,
+        "moneyEfficiency": 0,
+        "gemEfficiency": 0,
+        "isRankedPlayer": 0,
+        "esportsRewards": 0,
+        "nBrawlPass_regular": 0,
+        "nBrawlPass_plus": 0,
+        "proPassMonths": 0
+      }
+    },
+    "rushModifier": {
+      "resources": {
+        "daysPerCycle": 20,
+        "coins": 1,
+        "powerPoints": 0,
+        "credits": 0,
+        "bling": 0,
+        "gems": 0
+      },
+      "modifiers": {
+        "dailyActivityDelta": 1,
+        "challengesDelta": 0,
+        "eventsDelta": 1,
+        "finishQuests": 0,
+        "monthlySpending": 0,
+        "currency": 0,
+        "moneyEfficiency": 0,
+        "gemEfficiency": 0,
+        "isRankedPlayer": 0,
+        "esportsRewards": 0,
+        "nBrawlPass_regular": 0,
+        "nBrawlPass_plus": 0,
+        "proPassMonths": 0
+      }
+    },
+    "championshipChallenge": {
+      "resources": {
+        "daysPerCycle": 20,
+        "coins": 1,
+        "powerPoints": 0,
+        "credits": 0,
+        "bling": 0,
+        "gems": 0
+      },
+      "modifiers": {
+        "dailyActivityDelta": 0,
+        "challengesDelta": 0,
+        "eventsDelta": 0,
+        "finishQuests": 0,
+        "monthlySpending": 0,
+        "currency": 0,
+        "moneyEfficiency": 0,
+        "gemEfficiency": 0,
+        "isRankedPlayer": 0,
+        "esportsRewards": 0,
+        "nBrawlPass_regular": 0,
+        "nBrawlPass_plus": 0,
+        "proPassMonths": 0
+      }
+    },
+    "specialChallenges": {
+      "resources": {
+        "daysPerCycle": 20,
+        "coins": 1,
+        "powerPoints": 0,
+        "credits": 0,
+        "bling": 0,
+        "gems": 0
+      },
+      "modifiers": {
+        "dailyActivityDelta": 1,
+        "challengesDelta": 1,
+        "eventsDelta": 0,
+        "finishQuests": 0,
+        "monthlySpending": 0,
+        "currency": 0,
+        "moneyEfficiency": 0,
+        "gemEfficiency": 0,
+        "isRankedPlayer": 0,
+        "esportsRewards": 0,
+        "nBrawlPass_regular": 0,
+        "nBrawlPass_plus": 0,
+        "proPassMonths": 0
+      }
+    }
+  }
+}

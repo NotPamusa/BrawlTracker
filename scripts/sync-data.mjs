@@ -25,6 +25,16 @@ function normalizeKey(key) {
     .replace(/[()]/g, '');
 }
 
+function parseValue(val) {
+  const trimmed = val.trim();
+  if (trimmed === '') return 0;
+  const lower = trimmed.toLowerCase();
+  if (lower === 'true') return true;
+  if (lower === 'false') return false;
+  const num = parseFloat(trimmed);
+  return isNaN(num) ? trimmed : num;
+}
+
 function parseCSV(filePath) {
   if (!fs.existsSync(filePath)) return null;
   const content = fs.readFileSync(filePath, 'utf8');
@@ -39,17 +49,23 @@ function parseCSV(filePath) {
 
 function saveHistory(filePath, originalName) {
   if (!fs.existsSync(HISTORY_DIR)) fs.mkdirSync(HISTORY_DIR, { recursive: true });
-  
+
   const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
   const currentContent = fs.readFileSync(filePath, 'utf8');
-  
+
   // Find all matches for today
   const existing = fs.readdirSync(HISTORY_DIR)
-    .filter(f => f.startsWith(date) && f.endsWith(originalName))
-    .sort();
+    .filter(f => f.startsWith(date) && f.endsWith(originalName));
 
   // Check latest match
   if (existing.length > 0) {
+    const getNum = (f) => {
+      const parts = f.split('_');
+      if (parts.length < 2) return 0;
+      const num = parseInt(parts[1]);
+      return isNaN(num) ? 0 : num;
+    };
+    existing.sort((a, b) => getNum(a) - getNum(b));
     const latestFile = path.join(HISTORY_DIR, existing[existing.length - 1]);
     const latestContent = fs.readFileSync(latestFile, 'utf8');
     if (currentContent === latestContent) {
@@ -73,23 +89,39 @@ function syncIncome() {
   for (let i = 1; i < headers.length; i++) {
     const [main, sub] = headers[i].split('_');
     if (!data.incomeSources[main]) data.incomeSources[main] = {};
-    const source = data.incomeSources[main];
-    if (sub === 'tail') source.tail = { resources: {} };
-    else if (sub) {
-      if (!source.tiers) source.tiers = {};
-      source.tiers[sub] = { resources: {} };
-    } else source.resources = {};
   }
   for (let i = 1; i < lines.length; i++) {
     const cells = lines[i].split(separator).map(c => c.trim());
-    const key = normalizeKey(cells[0]);
+    const rawKey = cells[0];
+    const isResource = rawKey.startsWith('r_');
+    const isModifier = rawKey.startsWith('m_');
+    const key = (isResource || isModifier) ? rawKey.slice(2) : normalizeKey(rawKey);
+
     for (let j = 1; j < cells.length; j++) {
-      const val = parseFloat(cells[j]) || 0;
+      const val = parseValue(cells[j]);
+      if (val === 0) continue;
+
       const [main, sub] = headers[j].split('_');
       const source = data.incomeSources[main];
-      let target = (sub === 'tail') ? source.tail : (sub ? source.tiers[sub] : source);
+      
+      let target = source;
+      if (sub === 'tail') {
+        if (!source.tail) source.tail = {};
+        target = source.tail;
+      } else if (sub) {
+        if (!source.tiers) source.tiers = {};
+        if (!source.tiers[sub]) source.tiers[sub] = {};
+        target = source.tiers[sub];
+      }
+      
       if (key === 'dayspercycle') source.daysPerCycle = val;
-      else if (RESOURCE_KEYS.includes(key)) target.resources[key] = val;
+      else if (isResource || RESOURCE_KEYS.includes(key)) {
+        if (!target.resources) target.resources = {};
+        target.resources[key] = val;
+      } else if (isModifier) {
+        if (!target.modifiers) target.modifiers = {};
+        target.modifiers[key] = val;
+      }
     }
   }
   fs.writeFileSync(OUTPUT_INCOME, JSON.stringify(data, null, 2));

@@ -8,6 +8,7 @@ export default function CalculatorSettings() {
 
   const [dailyActivityDelta, setDailyActivityDelta] = useState("1");
   const [challengesDelta, setChallengesDelta] = useState("1");
+  const [bscChallengeDelta, setBscChallengeDelta] = useState("1");
   const [eventsDelta, setEventsDelta] = useState("1");
   const [finishQuests, setFinishQuests] = useState(true);
 
@@ -21,7 +22,8 @@ export default function CalculatorSettings() {
 
   const [nBrawlPass_regular, setNBrawlPass_regular] = useState(0);
   const [nBrawlPass_plus, setNBrawlPass_plus] = useState(0);
-  const [proPassMonths, setProPassMonths] = useState(0);
+  const [nRankedPass_free, setNRankedPass_free] = useState(12);
+  const [nRankedPass_regular, setNRankedPass_regular] = useState(0);
 
   const [stash, setStash] = useState<Record<string, number>>({});
 
@@ -116,20 +118,21 @@ export default function CalculatorSettings() {
                   <div className="chamfer-sm p-[1.5px] bg-white/10 focus-within:bg-[var(--brawl-cyan)] transition-colors">
                     <div className="chamfer-sm bg-black/60">
                       <select
-                        value={`${challengesDelta},${eventsDelta}`}
+                        value={`${challengesDelta},${bscChallengeDelta},${eventsDelta}`}
                         onChange={e => {
-                          const [ch, ev] = e.target.value.split(",");
+                          const [ch, bsc, ev] = e.target.value.split(",");
                           setChallengesDelta(ch);
+                          setBscChallengeDelta(bsc);
                           setEventsDelta(ev);
                         }}
                         className="w-full bg-transparent p-3 text-white font-bold outline-none appearance-none"
                         style={{ backgroundImage: 'none' }}
                       >
-                        <option value="1,1">Almost always</option>
-                        <option value="1,0.7">Primarily challenges</option>
-                        <option value="0.7,1">Primarily events</option>
-                        <option value="0.6,0.6">Sometimes</option>
-                        <option value="0.4,0.4">Rarely</option>
+                        <option value="1,1,1">Almost always</option>
+                        <option value="1,0.5,0.7">Primarily challenges</option>
+                        <option value="0.7,0.5,1">Primarily events</option>
+                        <option value="0.6,0.3,0.6">Sometimes</option>
+                        <option value="0.4,0,0.4">Rarely</option>
                       </select>
                     </div>
                   </div>
@@ -174,12 +177,18 @@ export default function CalculatorSettings() {
 
                 <div className="flex items-center gap-6 pt-6 border-t border-white/5">
                   <div className="flex-1 space-y-3">
-                    <label className="text-sm font-black text-white uppercase tracking-wide block">How many Pro Passes do you buy yearly?</label>
-                    <ProPassSlider proPassMonths={proPassMonths} setProPassMonths={setProPassMonths} />
+                    <label className="text-sm font-black text-white uppercase tracking-wide block">How many Ranked Passes do you buy yearly?</label>
+                    <RankedPassSlider freeMonths={nRankedPass_free} setFreeMonths={setNRankedPass_free} regMonths={nRankedPass_regular} setRegMonths={setNRankedPass_regular} />
                   </div>
-                  <div className="bg-green-500/10 p-4 rounded border border-green-500/20 flex flex-col items-center min-w-[100px] justify-center h-full self-end">
-                    <span className="text-[10px] font-black text-green-500 uppercase mb-1">PRO MONTHS</span>
-                    <span className="text-3xl font-display font-black text-white leading-none">{proPassMonths}</span>
+                  <div className="grid grid-cols-2 gap-2 min-w-[120px]">
+                    <div className="bg-purple-500/10 p-2 rounded border border-purple-500/20 flex flex-col items-center justify-center">
+                      <span className="text-[10px] font-black text-purple-400 uppercase mb-1 leading-none text-center">REGULAR</span>
+                      <span className="text-xl font-display font-black text-white leading-none">{nRankedPass_regular}</span>
+                    </div>
+                    <div className="bg-gray-500/10 p-2 rounded border border-gray-500/20 flex flex-col items-center justify-center">
+                      <span className="text-[10px] font-black text-gray-400 uppercase mb-1 leading-none text-center">FREE</span>
+                      <span className="text-xl font-display font-black text-white leading-none">{nRankedPass_free}</span>
+                    </div>
                   </div>
                 </div>
 
@@ -456,11 +465,11 @@ function BrawlPassSlider({ bpMonths, setBpMonths, bppMonths, setBppMonths }: any
   );
 }
 
-// Single Range Slider for Pro Pass
-function ProPassSlider({ proPassMonths, setProPassMonths }: any) {
+// Double Range Slider for Ranked Pass
+function RankedPassSlider({ freeMonths, setFreeMonths, regMonths, setRegMonths }: any) {
   const trackRef = useRef<HTMLDivElement>(null);
 
-  const handlePointerDown = (e: React.PointerEvent) => {
+  const handlePointerDown = (e: React.PointerEvent, type: 'free' | 'reg') => {
     e.preventDefault();
     if (!trackRef.current) return;
 
@@ -469,8 +478,19 @@ function ProPassSlider({ proPassMonths, setProPassMonths }: any) {
     const handleMove = (moveEv: PointerEvent) => {
       const rect = track.getBoundingClientRect();
       const pct = Math.max(0, Math.min(1, (moveEv.clientX - rect.left) / rect.width));
-      const val = Math.round(pct * 4); // Max 4
-      setProPassMonths(val);
+      const val = Math.round(pct * 12);
+
+      if (type === 'reg') {
+        const newVal = Math.min(val, 12);
+        setRegMonths(newVal);
+        // If reg increases, free might need to decrease if they exceed 12?
+        // Actually usually they sum to 12.
+        setFreeMonths(12 - newVal);
+      } else {
+        const newVal = Math.min(val, 12);
+        setFreeMonths(newVal);
+        setRegMonths(12 - newVal);
+      }
     };
 
     const handleUp = () => {
@@ -486,35 +506,47 @@ function ProPassSlider({ proPassMonths, setProPassMonths }: any) {
     if (!trackRef.current) return;
     const rect = trackRef.current.getBoundingClientRect();
     const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const val = Math.round(pct * 4);
-    setProPassMonths(val);
-    handlePointerDown(e);
+    const val = Math.round(pct * 12);
+    
+    // Simple toggle/move based on side
+    if (val < 6) {
+      setRegMonths(val);
+      setFreeMonths(12 - val);
+    } else {
+      setFreeMonths(12 - val); // Wait, if val is 8, reg is 8, free is 4.
+      setRegMonths(val);
+    }
   };
 
-  const width = (proPassMonths / 4) * 100;
+  const regWidth = (regMonths / 12) * 100;
+  const freeWidth = (freeMonths / 12) * 100;
 
   return (
     <div className="relative w-full h-12 flex items-center select-none py-2 cursor-pointer" ref={trackRef} onPointerDown={handleTrackPointerDown}>
       {/* Background Track */}
       <div className="absolute left-0 right-0 h-4 flex overflow-hidden rounded-full border-2 border-black/80 shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)] bg-black/60">
         <div 
-          style={{ width: `${width}%` }} 
-          className="h-full bg-gradient-to-b from-[#4ade80] to-[#166534] relative overflow-hidden"
+          style={{ width: `${regWidth}%` }} 
+          className="h-full bg-gradient-to-b from-purple-400 to-purple-800 relative overflow-hidden"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-[-20deg] animate-[sweep_2.5s_infinite]" />
         </div>
+        <div 
+          style={{ width: `${freeWidth}%` }} 
+          className="h-full bg-gradient-to-b from-gray-400 to-gray-700"
+        />
       </div>
 
       {/* Thumb */}
       <div
-        className="absolute w-10 h-10 bg-green-500 border-2 border-green-200 cursor-grab active:cursor-grabbing z-20 rounded-full shadow-lg hover:scale-110 transition-transform flex items-center justify-center overflow-hidden"
-        style={{ left: `calc(${width}% - 20px)` }}
+        className="absolute w-10 h-10 bg-purple-500 border-2 border-purple-200 cursor-grab active:cursor-grabbing z-20 rounded-full shadow-lg hover:scale-110 transition-transform flex items-center justify-center overflow-hidden"
+        style={{ left: `calc(${regWidth}% - 20px)` }}
         onPointerDown={e => {
           e.stopPropagation();
-          handlePointerDown(e);
+          handlePointerDown(e, 'reg');
         }}
       >
-        <img src="/icons/icon_pro_pass_icon.png" className="w-8 h-8 object-contain" alt="PRO" />
+        <img src="/icons/icon_ranked.png" className="w-8 h-8 object-contain" alt="RANKED" />
       </div>
     </div>
   );

@@ -1,0 +1,40 @@
+{
+  "incomeSources": {
+    "BrawlPass": {
+      "tiers": {
+        "free": {
+          "resources": {
+            "coins": 100,
+            "powerPoints": 50
+          },
+          "modifiers": {
+            "dailyActivityDelta": 0,
+            "currency": "EUR"
+          }
+        },
+        "plus": {
+          "resources": {
+            "coins": 500,
+            "powerPoints": 200
+          },
+          "modifiers": {
+            "dailyActivityDelta": 0,
+            "currency": "EUR"
+          }
+        }
+      },
+      "daysPerCycle": 28
+    },
+    "DailyActivity": {
+      "resources": {
+        "coins": 200,
+        "powerPoints": 100
+      },
+      "modifiers": {
+        "dailyActivityDelta": 5,
+        "currency": "EUR"
+      },
+      "daysPerCycle": 1
+    }
+  }
+}

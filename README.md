@@ -128,7 +128,6 @@ yes -> rankedPassTailDelta = 0.7 +- 0.3 (scale from bronze to legendary) | no ->
 
 
 
-
 # Brawl Progression Data Sync System
 
 This system automates the conversion of game data from an Apple Numbers spreadsheet (`BrawlToMAXIncomeData.numbers`) into structured JSON files for the calculator.

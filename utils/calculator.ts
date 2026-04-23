@@ -15,7 +15,7 @@ const COINS_MAX = 7765;
 
 const COST_GADGET = 1000;
 const COST_STAR_POWER = 2000;
-const COST_GEAR = 1000; // Simplified average. Epic gears = 1500
+const COST_GEAR = 1000;
 const COST_HYPERCHARGE = 5000;
 const COST_BUFFIE_COINS = 1000;
 const COST_BUFFIE_PP = 2000;
@@ -43,7 +43,8 @@ export interface UserSettings {
   esportsRewards: boolean;
   nBrawlPass_regular: number;
   nBrawlPass_plus: number;
-  proPassMonths: number;
+  nRankedPass_free: number;
+  nRankedPass_regular: number;
   stash: Record<string, number>;
 }
 

@@ -1,0 +1,54 @@
+{
+  "incomeSources": {
+    "dailyActivity": {
+      "resources": {}
+    },
+    "dailyFreebie": {
+      "resources": {}
+    },
+    "brawlPass": {
+      "tiers": {
+        "free": {
+          "resources": {}
+        },
+        "regular": {
+          "resources": {}
+        },
+        "plus": {
+          "resources": {}
+        }
+      },
+      "tail": {
+        "resources": {}
+      }
+    },
+    "rankedPass": {
+      "tiers": {
+        "free": {
+          "resources": {}
+        },
+        "regular": {
+          "resources": {}
+        }
+      },
+      "tail": {
+        "resources": {}
+      }
+    },
+    "megaPig": {
+      "resources": {}
+    },
+    "newBrawlerEvent": {
+      "resources": {}
+    },
+    "rushModifier": {
+      "resources": {}
+    },
+    "championshipChallenge": {
+      "resources": {}
+    },
+    "specialChallenges": {
+      "resources": {}
+    }
+  }
+}
