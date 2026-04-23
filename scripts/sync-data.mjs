@@ -46,7 +46,7 @@ function parseCSV(filePath) {
     .map(line => line.replace(/^.*:.*:.*: /, ''));
   if (lines.length === 0) return null;
   const separator = lines[0].includes(';') ? ';' : ',';
-  const headers = lines[0].split(separator).map(h => h.trim());
+  const headers = lines[0].split(separator).map(h => h.trim().replace(/^"|"$/g, ''));
   return { lines, headers, separator };
 }
 
@@ -98,10 +98,13 @@ function syncIncome() {
   if (!parsed) return;
   const { lines, headers, separator } = parsed;
   const data = { incomeSources: {} };
+
+  // Initialize all income source objects directly from headers
   for (let i = 1; i < headers.length; i++) {
-    const [main, sub] = headers[i].split('_');
-    if (!data.incomeSources[main]) data.incomeSources[main] = {};
+    const key = headers[i];
+    if (!data.incomeSources[key]) data.incomeSources[key] = {};
   }
+
   for (let i = 1; i < lines.length; i++) {
     const cells = lines[i].split(separator).map(c => c.trim());
     const rawKey = cells[0];
@@ -113,26 +116,17 @@ function syncIncome() {
       const val = parseValue(cells[j]);
       if (val === 0) continue;
 
-      const [main, sub] = headers[j].split('_');
-      const source = data.incomeSources[main];
+      const sourceName = headers[j];
+      const source = data.incomeSources[sourceName];
 
-      let target = source;
-      if (sub === 'tail') {
-        if (!source.tail) source.tail = {};
-        target = source.tail;
-      } else if (sub) {
-        if (!source.tiers) source.tiers = {};
-        if (!source.tiers[sub]) source.tiers[sub] = {};
-        target = source.tiers[sub];
-      }
-
-      if (key === 'dayspercycle') source.daysPerCycle = val;
-      else if (isResource || RESOURCE_KEYS.includes(key)) {
-        if (!target.resources) target.resources = {};
-        target.resources[key] = val;
+      if (key === 'dayspercycle' || key === 'daysPerCycle') {
+        source.daysPerCycle = val;
+      } else if (isResource || RESOURCE_KEYS.includes(key)) {
+        if (!source.resources) source.resources = {};
+        source.resources[key] = val;
       } else if (isModifier) {
-        if (!target.modifiers) target.modifiers = {};
-        target.modifiers[key] = val;
+        if (!source.modifiers) source.modifiers = {};
+        source.modifiers[key] = val;
       }
     }
   }

@@ -1,7 +1,6 @@
 {
   "incomeSources": {
     "dailyActivity": {
-      "daysPerCycle": 1,
       "resources": {
         "coins": 150,
         "credits": 122
@@ -11,7 +10,6 @@
       }
     },
     "dailyFreebie": {
-      "daysPerCycle": 1,
       "resources": {
         "coins": 5,
         "powerPoints": 2,
@@ -26,7 +24,6 @@
       }
     },
     "brawlPass_free": {
-      "daysPerCycle": 30.4,
       "resources": {
         "coins": 12000,
         "powerPoints": 5000,
@@ -38,7 +35,6 @@
       }
     },
     "brawlPass_regular": {
-      "daysPerCycle": 30.4,
       "resources": {
         "coins": 18000,
         "powerPoints": 10000,
@@ -51,7 +47,6 @@
       }
     },
     "brawlPass_plus": {
-      "daysPerCycle": 30.4,
       "resources": {
         "coins": 22000,
         "powerPoints": 15000,
@@ -64,7 +59,6 @@
       }
     },
     "brawlPass_tail": {
-      "daysPerCycle": 30.4,
       "resources": {
         "coins": 12,
         "powerPoints": 10
@@ -76,7 +70,6 @@
       }
     },
     "rankedPass_free": {
-      "daysPerCycle": 120,
       "resources": {
         "coins": 500
       },
@@ -85,7 +78,6 @@
       }
     },
     "rankedPass_regular": {
-      "daysPerCycle": 120,
       "resources": {
         "coins": 2500,
         "powerPoints": 1500,
@@ -96,7 +88,6 @@
       }
     },
     "rankedPass_tail": {
-      "daysPerCycle": 120,
       "resources": {
         "coins": 150,
         "powerPoints": 150,
@@ -108,7 +99,6 @@
       }
     },
     "megaPig": {
-      "daysPerCycle": 30.4,
       "resources": {
         "coins": 1000,
         "powerPoints": 800,
@@ -122,7 +112,6 @@
       }
     },
     "newBrawlerEvent": {
-      "daysPerCycle": 20,
       "resources": {
         "coins": 1
       },
@@ -132,7 +121,6 @@
       }
     },
     "rushModifier": {
-      "daysPerCycle": 20,
       "resources": {
         "coins": 1
       },
@@ -142,7 +130,6 @@
       }
     },
     "championshipChallenge": {
-      "daysPerCycle": 20,
       "resources": {
         "coins": 1
       },
@@ -153,7 +140,6 @@
       }
     },
     "specialChallenges": {
-      "daysPerCycle": 20,
       "resources": {
         "coins": 1
       },

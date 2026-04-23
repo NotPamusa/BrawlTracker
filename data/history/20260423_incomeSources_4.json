@@ -25,86 +25,89 @@
         "nBrawlPass_plus": 2
       }
     },
-    "brawlPass_free": {
-      "daysPerCycle": 30.4,
-      "resources": {
-        "coins": 12000,
-        "powerPoints": 5000,
-        "credits": 900,
-        "gems": 50
+    "brawlPass": {
+      "tiers": {
+        "free": {
+          "resources": {
+            "coins": 12000,
+            "powerPoints": 5000,
+            "credits": 900,
+            "gems": 50
+          },
+          "modifiers": {
+            "nBrawlPass_free": 1
+          }
+        },
+        "regular": {
+          "resources": {
+            "coins": 18000,
+            "powerPoints": 10000,
+            "credits": 1500,
+            "bling": 1000,
+            "gems": 150
+          },
+          "modifiers": {
+            "nBrawlPass_regular": 1
+          }
+        },
+        "plus": {
+          "resources": {
+            "coins": 22000,
+            "powerPoints": 15000,
+            "credits": 2500,
+            "bling": 1500,
+            "gems": 250
+          },
+          "modifiers": {
+            "nBrawlPass_plus": 1
+          }
+        }
       },
-      "modifiers": {
-        "nBrawlPass_free": 1
+      "daysPerCycle": 30.4,
+      "tail": {
+        "resources": {
+          "coins": 12,
+          "powerPoints": 10
+        },
+        "modifiers": {
+          "nBrawlPass_free": 1,
+          "nBrawlPass_regular": 1.5,
+          "nBrawlPass_plus": 2
+        }
       }
     },
-    "brawlPass_regular": {
-      "daysPerCycle": 30.4,
-      "resources": {
-        "coins": 18000,
-        "powerPoints": 10000,
-        "credits": 1500,
-        "bling": 1000,
-        "gems": 150
+    "rankedPass": {
+      "tiers": {
+        "free": {
+          "resources": {
+            "coins": 500
+          },
+          "modifiers": {
+            "nRankedPass_free": 1
+          }
+        },
+        "regular": {
+          "resources": {
+            "coins": 2500,
+            "powerPoints": 1500,
+            "gems": 600
+          },
+          "modifiers": {
+            "nRankedPass_regular": 1
+          }
+        }
       },
-      "modifiers": {
-        "nBrawlPass_regular": 1
-      }
-    },
-    "brawlPass_plus": {
-      "daysPerCycle": 30.4,
-      "resources": {
-        "coins": 22000,
-        "powerPoints": 15000,
-        "credits": 2500,
-        "bling": 1500,
-        "gems": 250
-      },
-      "modifiers": {
-        "nBrawlPass_plus": 1
-      }
-    },
-    "brawlPass_tail": {
-      "daysPerCycle": 30.4,
-      "resources": {
-        "coins": 12,
-        "powerPoints": 10
-      },
-      "modifiers": {
-        "nBrawlPass_free": 1,
-        "nBrawlPass_regular": 1.5,
-        "nBrawlPass_plus": 2
-      }
-    },
-    "rankedPass_free": {
       "daysPerCycle": 120,
-      "resources": {
-        "coins": 500
-      },
-      "modifiers": {
-        "nRankedPass_free": 1
-      }
-    },
-    "rankedPass_regular": {
-      "daysPerCycle": 120,
-      "resources": {
-        "coins": 2500,
-        "powerPoints": 1500,
-        "gems": 600
-      },
-      "modifiers": {
-        "nRankedPass_regular": 1
-      }
-    },
-    "rankedPass_tail": {
-      "daysPerCycle": 120,
-      "resources": {
-        "coins": 150,
-        "powerPoints": 150,
-        "bling": 150
-      },
-      "modifiers": {
-        "nRankedPass_free": 1,
-        "nRankedPass_regular": 1
+      "tail": {
+        "resources": {
+          "coins": 150,
+          "powerPoints": 150,
+          "bling": 150
+        },
+        "modifiers": {
+          "nRankedPass_free": 1,
+          "nRankedPass_regular": 1
+        }
       }
     },
     "megaPig": {

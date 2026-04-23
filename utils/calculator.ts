@@ -1,6 +1,7 @@
 import { PlayerStats } from './brawlAPI';
 import gameMetadata from "@/data/gameMetadata.json";
 import brawlerRarities from "@/data/brawlers.json";
+import incomeData from "@/data/incomeSources.json";
 
 const {
   ppToLevel: PP_TO_LEVEL,
@@ -21,7 +22,6 @@ const {
   costLegendaryBrawler: COST_LEGENDARY,
   costUltraLegendaryBrawler: COST_ULTRA_LEGENDARY
 } = gameMetadata;
-
 const RARITY_COSTS: Record<string, number> = {
   "Common": COST_COMMON,
   "Rare": COST_RARE,
@@ -60,7 +60,23 @@ export interface UserSettings {
   nBrawlPass_plus: number;
   nRankedPass_free: number;
   nRankedPass_regular: number;
+  nBrawlPass_free: number;
+  bscChallengeDelta: number;
   stash: Record<string, number>;
+}
+
+export interface IncomeSource {
+  daysPerCycle: number;
+  resources: Record<string, number>;
+  modifiers?: Record<string, number>;
+}
+
+export interface DailyResources {
+  coins: number;
+  powerPoints: number;
+  credits: number;
+  gems: number;
+  bling: number;
 }
 
 export function calculateDaysToMax(
@@ -72,13 +88,11 @@ export function calculateDaysToMax(
   let currentPPProgression = 0;
   let currentCreditsProgression = 0;
 
-  let nMaxCoins = 0;
-  let nMaxPP = 0;
   let nMaxCredits = 0;
 
-  // 0. Calculate Credits (Brawler Unlock) progression
+  // Calculate Credits (Brawler Unlock) progression
   const ownedBrawlerNames = new Set(player.brawlers.map(b => b.name.toUpperCase()));
-  
+
   Object.entries(brawlerRarities).forEach(([name, rarity]) => {
     const cost = RARITY_COSTS[rarity] || 0;
     nMaxCredits += cost;
@@ -100,6 +114,7 @@ export function calculateDaysToMax(
   let hcSurplus = 0;
   let buffiesSurplus = 0;
 
+  // Iterate through brawlers to calculate coins/PP spent. Also surplus items.
   for (const brawler of player.brawlers) {
     // Add coins/pp spent to current level
     const lvlIdx = brawler.power - 1;
@@ -136,31 +151,36 @@ export function calculateDaysToMax(
 
     currentPPProgression += buffiesOwned * COST_BUFFIE_PP;
 
-
-    // 2. Max state for this brawler
-    nMaxPP += PP_MAX;
-    nMaxCoins += COINS_MAX;
-
-    nMaxCoins += targetGadgets * COST_GADGET;
-    nMaxCoins += targetSPs * COST_STAR_POWER;
-    nMaxCoins += targetGears * COST_GEAR;
-    nMaxCoins += targetHC * COST_HYPERCHARGE;
   }
 
   // Capping the total buffies to what is released in-game
   const totalTargetBuffies = mode === 'FullMAX' ? gameMetadata.totalBrawlers * targetBuffies : gameMetadata.releasedBuffieBrawlerCount * targetBuffies;
 
-  nMaxCoins += totalTargetBuffies * COST_BUFFIE_COINS;
-  nMaxPP += totalTargetBuffies * COST_BUFFIE_PP;
+  const nMaxCoins = (COINS_MAX + COST_GADGET * targetGadgets + COST_STAR_POWER * targetSPs + COST_GEAR * targetGears + COST_HYPERCHARGE * targetHC) * gameMetadata.totalBrawlers + COST_BUFFIE_COINS * totalTargetBuffies;
+  const nMaxPP = PP_MAX * gameMetadata.totalBrawlers + COST_BUFFIE_PP * totalTargetBuffies;
 
-  // Linear progression rate: m
-  const mCoins = 1000;
-  const mPP = 1000;
-  const mCredits = 250; // Placeholder until income models are linked
+
+  // *** Linear progression rate: m ***
+
+  let m_dailyResources = calculateDailyResources(player, settings);
+
+
+
+
+
+
+
+
+
+
 
   const requiredCoins = Math.max(0, nMaxCoins - currentCoinsProgression);
   const requiredPP = Math.max(0, nMaxPP - currentPPProgression);
   const requiredCredits = Math.max(0, nMaxCredits - currentCreditsProgression);
+
+  const mCoins = m_dailyResources.coins || 1;
+  const mPP = m_dailyResources.powerPoints || 1;
+  const mCredits = m_dailyResources.credits || 1;
 
   const daysCoins = requiredCoins / mCoins;
   const daysPowerPoints = requiredPP / mPP;
@@ -180,4 +200,57 @@ export function calculateDaysToMax(
     nMaxCredits,
     currentCredits: currentCreditsProgression
   };
+}
+
+function calculateDailyResources(player: PlayerStats, settings?: UserSettings): DailyResources {
+  const daily: DailyResources = {
+    coins: 0,
+    powerPoints: 0,
+    credits: 0,
+    gems: 0,
+    bling: 0
+  };
+
+  if (!settings) return daily;
+
+  const sources = (incomeData as any).incomeSources;
+
+  for (const sourceId in sources) {
+    const source = sources[sourceId] as IncomeSource;
+    const days = source.daysPerCycle || 1;
+
+    let multiplier = getModification(source, settings);
+
+    for (const resId in source.resources) {
+      if (resId in daily) {
+        const amount = source.resources[resId];
+        (daily as any)[resId] += (amount * multiplier) / days;
+      }
+    }
+  }
+
+  return daily;
+}
+
+
+function getModification(
+  incomeSource: IncomeSource,
+  settings: UserSettings
+): number {
+  let result = 1;
+
+  if (!incomeSource.modifiers) return result;
+
+  for (const key in incomeSource.modifiers) {
+    const modifierKey = key as keyof UserSettings;
+
+    const sourceValue = incomeSource.modifiers[key] ?? 1;
+    // Default to 0 if the setting is missing, except for specific keys that should default to 1 if we want "always on"
+    // However, most deltas/counts in settings should be 0 if not provided.
+    const userValue = (settings[modifierKey] as number) ?? 0;
+
+    result = result * (sourceValue * userValue);
+  }
+
+  return result;
 }
