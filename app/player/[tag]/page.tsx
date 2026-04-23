@@ -3,6 +3,7 @@ import { getPlayer, parseProgressionState, RELEASED_BUFFIES_BRAWLER_COUNT } from
 import { saveDailySnapshot } from "@/utils/snapshot";
 import { calculateDaysToMax } from "@/utils/calculator";
 import CalculatorSettings from "@/components/CalculatorSettings";
+import gameMetadata from "@/data/gameMetadata.json";
 
 interface PlayerPageProps {
   params: Promise<{ tag: string }>;
@@ -156,7 +157,7 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
           <StatBox
             title="Brawlers Unlocked"
             current={stats.brawlers_unlocked}
-            max={stats.brawlers_unlocked}
+            max={gameMetadata.totalBrawlers}
             colorHex="#cbd5e1"
             valueLabel="unlocked"
             iconUrl="/brawler_portraits/Shelly_portrait.png"
@@ -230,13 +231,23 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
           <div>
             <span className="text-[10px] text-[var(--brawl-text-dim)] font-bold uppercase tracking-[0.2em] block mb-1">Critical Restriction</span>
             <span className="text-xl font-display font-bold text-white uppercase tracking-wider">
-              {estimate.daysCoins > estimate.daysPowerPoints ? 'Coins' : 'Power Points'} Bottleneck
+              {(() => {
+                const max = Math.max(estimate.daysCoins, estimate.daysPowerPoints, estimate.daysCredits);
+                if (max === estimate.daysCoins) return 'Coins';
+                if (max === estimate.daysPowerPoints) return 'Power Points';
+                return 'Credits';
+              })()} Bottleneck
             </span>
           </div>
           <div className="flex flex-col items-center sm:items-end">
             <span className="text-[10px] text-[var(--brawl-text-dim)] font-bold uppercase tracking-[0.2em] block mb-1">Required Resources</span>
             <span className="text-xl font-display font-bold text-[var(--brawl-cyan)]">
-              {num(Math.max(estimate.nMaxCoins - estimate.currentCoins, 0))} {estimate.daysCoins > estimate.daysPowerPoints ? 'Coins' : 'Power Points'}
+              {(() => {
+                const max = Math.max(estimate.daysCoins, estimate.daysPowerPoints, estimate.daysCredits);
+                if (max === estimate.daysCoins) return `${num(Math.max(estimate.nMaxCoins - estimate.currentCoins, 0))} Coins`;
+                if (max === estimate.daysPowerPoints) return `${num(Math.max(estimate.nMaxPP - estimate.currentPP, 0))} PP`;
+                return `${num(Math.max(estimate.nMaxCredits - estimate.currentCredits, 0))} Credits`;
+              })()}
             </span>
           </div>
         </div>

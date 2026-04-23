@@ -1,5 +1,6 @@
 import { PlayerStats } from './brawlAPI';
 import gameMetadata from "@/data/gameMetadata.json";
+import brawlerRarities from "@/data/brawlers.json";
 
 const {
   ppToLevel: PP_TO_LEVEL,
@@ -11,17 +12,37 @@ const {
   costGear: COST_GEAR,
   costHypercharge: COST_HYPERCHARGE,
   costBuffieCoins: COST_BUFFIE_COINS,
-  costBuffiePP: COST_BUFFIE_PP
+  costBuffiePP: COST_BUFFIE_PP,
+  costCommonBrawler: COST_COMMON,
+  costRareBrawler: COST_RARE,
+  costSuperRareBrawler: COST_SUPER_RARE,
+  costEpicBrawler: COST_EPIC,
+  costMythicBrawler: COST_MYTHIC,
+  costLegendaryBrawler: COST_LEGENDARY,
+  costUltraLegendaryBrawler: COST_ULTRA_LEGENDARY
 } = gameMetadata;
+
+const RARITY_COSTS: Record<string, number> = {
+  "Common": COST_COMMON,
+  "Rare": COST_RARE,
+  "Super Rare": COST_SUPER_RARE,
+  "Epic": COST_EPIC,
+  "Mythic": COST_MYTHIC,
+  "Legendary": COST_LEGENDARY,
+  "Ultra Legendary": COST_ULTRA_LEGENDARY
+};
 
 export interface CalculationResult {
   daysCoins: number;
   daysPowerPoints: number;
+  daysCredits: number;
   maxDays: number;
   nMaxCoins: number;
   currentCoins: number;
   nMaxPP: number;
   currentPP: number;
+  nMaxCredits: number;
+  currentCredits: number;
 }
 
 export interface UserSettings {
@@ -49,9 +70,22 @@ export function calculateDaysToMax(
 ): CalculationResult {
   let currentCoinsProgression = 0;
   let currentPPProgression = 0;
+  let currentCreditsProgression = 0;
 
   let nMaxCoins = 0;
   let nMaxPP = 0;
+  let nMaxCredits = 0;
+
+  // 0. Calculate Credits (Brawler Unlock) progression
+  const ownedBrawlerNames = new Set(player.brawlers.map(b => b.name.toUpperCase()));
+  
+  Object.entries(brawlerRarities).forEach(([name, rarity]) => {
+    const cost = RARITY_COSTS[rarity] || 0;
+    nMaxCredits += cost;
+    if (ownedBrawlerNames.has(name.toUpperCase())) {
+      currentCreditsProgression += cost;
+    }
+  });
 
   // Determine target item counts per brawler depending on mode
   const targetGadgets = mode === 'FullMAX' ? 2 : 1;
@@ -120,27 +154,30 @@ export function calculateDaysToMax(
   nMaxPP += totalTargetBuffies * COST_BUFFIE_PP;
 
   // Linear progression rate: m
-  // The user requested for now to consider 1000 of each resource per day
   const mCoins = 1000;
   const mPP = 1000;
+  const mCredits = 250; // Placeholder until income models are linked
 
-  // t = (n_max - n_current) / m
-  // Prevent negative days
-  const leftoverCoins = Math.max(0, nMaxCoins - currentCoinsProgression);
-  const leftoverPP = Math.max(0, nMaxPP - currentPPProgression);
+  const requiredCoins = Math.max(0, nMaxCoins - currentCoinsProgression);
+  const requiredPP = Math.max(0, nMaxPP - currentPPProgression);
+  const requiredCredits = Math.max(0, nMaxCredits - currentCreditsProgression);
 
-  const daysCoins = leftoverCoins / mCoins;
-  const daysPowerPoints = leftoverPP / mPP;
+  const daysCoins = requiredCoins / mCoins;
+  const daysPowerPoints = requiredPP / mPP;
+  const daysCredits = requiredCredits / mCredits;
 
-  const maxDays = Math.ceil(Math.max(daysCoins, daysPowerPoints));
+  const maxDays = Math.ceil(Math.max(daysCoins, daysPowerPoints, daysCredits));
 
   return {
     daysCoins: Math.ceil(daysCoins),
     daysPowerPoints: Math.ceil(daysPowerPoints),
+    daysCredits: Math.ceil(daysCredits),
     maxDays,
     nMaxCoins,
     currentCoins: currentCoinsProgression,
     nMaxPP,
-    currentPP: currentPPProgression
+    currentPP: currentPPProgression,
+    nMaxCredits,
+    currentCredits: currentCreditsProgression
   };
 }

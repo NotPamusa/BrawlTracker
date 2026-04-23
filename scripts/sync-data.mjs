@@ -11,6 +11,7 @@ const METADATA_CSV = path.join(DATA_DIR, 'game_metadata.csv');
 const OUTPUT_INCOME = path.join(DATA_DIR, 'incomeSources.json');
 const OUTPUT_CONVERSION = path.join(DATA_DIR, 'valueConversions.json');
 const METADATA_FILE = path.join(DATA_DIR, 'gameMetadata.json');
+const BRAWLERS_FILE = path.join(DATA_DIR, 'brawlers.json');
 
 const RESOURCE_KEYS = [
   'coins', 'powerPoints', 'credits', 'bling', 'gems',
@@ -207,9 +208,35 @@ function syncMetadata() {
   }
 }
 
+async function syncBrawlers() {
+  try {
+    const res = await fetch("https://api.brawlapi.com/v1/brawlers");
+    if (!res.ok) {
+      console.warn("BrawlAPI error, skipping brawler sync.");
+      return;
+    }
+    const data = await res.json();
+    const mapping = {};
+    if (data.list) {
+      data.list.forEach(b => {
+        mapping[b.name.toUpperCase()] = b.rarity.name;
+      });
+    }
+    
+    if (Object.keys(mapping).length > 0) {
+      fs.writeFileSync(BRAWLERS_FILE, JSON.stringify(mapping, null, 2));
+      saveHistory(BRAWLERS_FILE, 'brawlers.json');
+      console.log(`Synced: ${BRAWLERS_FILE}`);
+    }
+  } catch (error) {
+    console.error("Failed to sync brawlers:", error.message);
+  }
+}
+
 syncIncome();
 syncConversions();
 syncMetadata();
+await syncBrawlers();
 
 [INCOME_CSV, CONVERSION_CSV, METADATA_CSV].forEach(f => {
   if (fs.existsSync(f)) fs.unlinkSync(f);
