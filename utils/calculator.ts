@@ -30,34 +30,65 @@ export interface CalculationResult {
   currentPP: number;
 }
 
-export function calculateDaysToMax(player: PlayerStats, mode: 'MAX' | 'FullMAX' = 'MAX'): CalculationResult {
+export interface UserSettings {
+  dailyActivityDelta: number;
+  challengesDelta: number;
+  eventsDelta: number;
+  finishQuests: boolean;
+  monthlySpending: number;
+  currency: string;
+  moneyEfficiency: number;
+  gemEfficiency: number;
+  isRankedPlayer: boolean;
+  esportsRewards: boolean;
+  nBrawlPass_regular: number;
+  nBrawlPass_plus: number;
+  proPassMonths: number;
+  stash: Record<string, number>;
+}
+
+export function calculateDaysToMax(
+  player: PlayerStats,
+  mode: 'MAX' | 'FullMAX' = 'MAX',
+  settings?: UserSettings
+): CalculationResult {
   let currentCoinsProgression = 0;
   let currentPPProgression = 0;
 
   let nMaxCoins = 0;
   let nMaxPP = 0;
 
-  // Assuming player wants to max ALL brawlers they have currently unlocked.
-  // We're ignoring the overall 86 brawlers baseline, as user requested "Sum of all brawlers"
-
   // Determine target item counts per brawler depending on mode
   const targetGadgets = mode === 'FullMAX' ? 2 : 1;
   const targetSPs = mode === 'FullMAX' ? 2 : 1;
-  const targetGears = 2; // Always 2
+  const targetGears = 2;
   const targetHC = 1;
   const targetBuffies = 3;
+
+  let gadgetsSurplus = 0;
+  let spsSurplus = 0;
+  let gearsSurplus = 0;
+  let hcSurplus = 0;
+  let buffiesSurplus = 0;
 
   for (const brawler of player.brawlers) {
     // 1. Current state for this brawler
     const lvlIdx = brawler.power - 1;
-    currentPPProgression += PP_TO_LEVEL[lvlIdx] || PP_MAX;
-    currentCoinsProgression += COINS_TO_LEVEL[lvlIdx] || COINS_MAX;
+    currentPPProgression += PP_TO_LEVEL[lvlIdx] ?? 0;
+    currentCoinsProgression += COINS_TO_LEVEL[lvlIdx] ?? 0;
 
     // Items unlocked limit calculation
-    const gadgetsOwned = Math.min(brawler.gadgets?.length || 0, targetGadgets);
-    const spOwned = Math.min(brawler.starPowers?.length || 0, targetSPs);
-    const gearsOwned = Math.min(brawler.gears?.length || 0, targetGears);
-    const hcOwned = Math.min(brawler.hyperCharges?.length || 0, targetHC);
+    const gadgetsOwned = Math.min(brawler.gadgets?.length ?? 0, targetGadgets);
+    gadgetsSurplus += Math.max(0, (brawler.gadgets?.length ?? 0) - targetGadgets);
+
+    const spOwned = Math.min(brawler.starPowers?.length ?? 0, targetSPs);
+    spsSurplus += Math.max(0, (brawler.starPowers?.length ?? 0) - targetSPs);
+
+    const gearsOwned = Math.min(brawler.gears?.length ?? 0, targetGears);
+    gearsSurplus += Math.max(0, (brawler.gears?.length ?? 0) - targetGears);
+
+    const hcOwned = Math.min(brawler.hyperCharges?.length ?? 0, targetHC);
+    hcSurplus += Math.max(0, (brawler.hyperCharges?.length ?? 0) - targetHC);
 
     let buffiesOwnedCount = 0;
     if (brawler.buffies) {

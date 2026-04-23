@@ -1,0 +1,133 @@
+{
+  "incomeSources": {
+    "dailyActivity": {
+      "resources": {
+        "coins": 150,
+        "credits": 122,
+        "bling": 0,
+        "gems": 0
+      },
+      "daysPerCycle": 1
+    },
+    "dailyFreebie": {
+      "resources": {
+        "coins": 5,
+        "credits": 2,
+        "bling": 0,
+        "gems": 0.05
+      },
+      "daysPerCycle": 1
+    },
+    "brawlPass": {
+      "tiers": {
+        "free": {
+          "resources": {
+            "coins": 12000,
+            "credits": 900,
+            "bling": 0,
+            "gems": 50
+          }
+        },
+        "regular": {
+          "resources": {
+            "coins": 18000,
+            "credits": 1500,
+            "bling": 1000,
+            "gems": 150
+          }
+        },
+        "plus": {
+          "resources": {
+            "coins": 22000,
+            "credits": 2500,
+            "bling": 1500,
+            "gems": 250
+          }
+        }
+      },
+      "tail": {
+        "resources": {
+          "coins": 12,
+          "credits": 0,
+          "bling": 0,
+          "gems": 0
+        }
+      },
+      "daysPerCycle": 30.4
+    },
+    "rankedPass": {
+      "tiers": {
+        "free": {
+          "resources": {
+            "coins": 500,
+            "credits": 0,
+            "bling": 0,
+            "gems": 0
+          }
+        },
+        "regular": {
+          "resources": {
+            "coins": 2500,
+            "credits": 0,
+            "bling": 0,
+            "gems": 600
+          }
+        }
+      },
+      "tail": {
+        "resources": {
+          "coins": 150,
+          "credits": 0,
+          "bling": 150,
+          "gems": 0
+        }
+      },
+      "daysPerCycle": 120
+    },
+    "megaPig": {
+      "resources": {
+        "coins": 1000,
+        "credits": 200,
+        "bling": 50,
+        "gems": 0.5
+      },
+      "daysPerCycle": 30.4
+    },
+    "newBrawlerEvent": {
+      "resources": {
+        "coins": 1,
+        "credits": 0,
+        "bling": 0,
+        "gems": 0
+      },
+      "daysPerCycle": 20
+    },
+    "rushModifier": {
+      "resources": {
+        "coins": 1,
+        "credits": 0,
+        "bling": 0,
+        "gems": 0
+      },
+      "daysPerCycle": 20
+    },
+    "championshipChallenge": {
+      "resources": {
+        "coins": 1,
+        "credits": 0,
+        "bling": 0,
+        "gems": 0
+      },
+      "daysPerCycle": 20
+    },
+    "specialChallenges": {
+      "resources": {
+        "coins": 1,
+        "credits": 0,
+        "bling": 0,
+        "gems": 0
+      },
+      "daysPerCycle": 20
+    }
+  }
+}

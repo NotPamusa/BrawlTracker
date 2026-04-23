@@ -2,6 +2,7 @@ import EstimateCard from "@/components/EstimateCard";
 import { getPlayer, parseProgressionState, RELEASED_BUFFIES_BRAWLER_COUNT } from "@/utils/brawlAPI";
 import { saveDailySnapshot } from "@/utils/snapshot";
 import { calculateDaysToMax } from "@/utils/calculator";
+import CalculatorSettings from "@/components/CalculatorSettings";
 
 interface PlayerPageProps {
   params: Promise<{ tag: string }>;
@@ -111,7 +112,7 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
   };
 
   return (
-    <main className="flex flex-col flex-1 items-center pt-28 pb-20 px-4 sm:px-6 relative z-10 w-full max-w-6xl mx-auto space-y-6">
+    <main className="flex flex-col flex-1 items-center pt-28 pb-20 px-4 sm:px-6 relative z-20 w-full max-w-6xl mx-auto space-y-6">
 
       {/* Header section */}
       <div className="w-full flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-2">
@@ -130,7 +131,7 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
       <div className="w-full grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
         {/* Main Estimate - Takes up 1 column on LG displays, full width on small */}
-        <div className="lg:col-span-1 flex flex-col">
+        <div className="lg:col-span-1 flex flex-col gap-4">
           <EstimateCard
             title="ESTIMATED TIME&#10;TO MAX ACCOUNT"
             days={estimate.maxDays}
@@ -146,6 +147,7 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
               </svg>
             }
           />
+          <CalculatorSettings />
         </div>
 
         {/* Breakdown Grid - Takes up 2 columns on LG displays */}

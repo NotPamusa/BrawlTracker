@@ -1,0 +1,61 @@
+{
+  "incomeSources": {
+    "brawlPass": {
+      "tiers": {
+        "free": {
+          "resources": {
+            "coins": 12000,
+            "credits": 900,
+            "bling": 0
+          }
+        },
+        "regular": {
+          "resources": {
+            "coins": 18000,
+            "credits": 1500,
+            "bling": 1000
+          }
+        },
+        "plus": {
+          "resources": {
+            "coins": 22000,
+            "credits": 2500,
+            "bling": 1500
+          }
+        }
+      },
+      "tail": {
+        "resources": {
+          "coins": 12,
+          "credits": 0,
+          "bling": 0
+        }
+      },
+      "daysPerCycle": 30.4
+    },
+    "dailyActivity": {
+      "resources": {
+        "coins": 150,
+        "credits": 122,
+        "bling": 0
+      },
+      "daysPerCycle": 1
+    },
+    "dailyFreebie": {
+      "resources": {
+        "coins": 5,
+        "credits": 2,
+        "bling": 0
+      },
+      "daysPerCycle": 1
+    },
+    "megaPig": {
+      "resources": {
+        "coins": 1000,
+        "credits": 200,
+        "bling": 50
+      },
+      "daysPerCycle": 30.4
+    }
+  }
+}
