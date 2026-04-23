@@ -7,8 +7,10 @@ const HISTORY_DIR = path.join(DATA_DIR, 'history');
 const INCOME_CSV = path.join(DATA_DIR, 'income_model.csv');
 const CONVERSION_CSV = path.join(DATA_DIR, 'value_conversions.csv');
 
+const METADATA_CSV = path.join(DATA_DIR, 'game_metadata.csv');
 const OUTPUT_INCOME = path.join(DATA_DIR, 'incomeSources.json');
 const OUTPUT_CONVERSION = path.join(DATA_DIR, 'valueConversions.json');
+const METADATA_FILE = path.join(DATA_DIR, 'gameMetadata.json');
 
 const RESOURCE_KEYS = [
   'coins', 'powerPoints', 'credits', 'bling', 'gems',
@@ -103,7 +105,7 @@ function syncIncome() {
 
       const [main, sub] = headers[j].split('_');
       const source = data.incomeSources[main];
-      
+
       let target = source;
       if (sub === 'tail') {
         if (!source.tail) source.tail = {};
@@ -113,7 +115,7 @@ function syncIncome() {
         if (!source.tiers[sub]) source.tiers[sub] = {};
         target = source.tiers[sub];
       }
-      
+
       if (key === 'dayspercycle') source.daysPerCycle = val;
       else if (isResource || RESOURCE_KEYS.includes(key)) {
         if (!target.resources) target.resources = {};
@@ -150,9 +152,42 @@ function syncConversions() {
   console.log(`Synced: ${OUTPUT_CONVERSION}`);
 }
 
+function syncMetadata() {
+  const parsed = parseCSV(METADATA_CSV);
+  if (!parsed) return;
+  const { lines, headers, separator } = parsed;
+  const metadata = {};
+
+  for (let i = 1; i < lines.length; i++) {
+    const cells = lines[i].split(separator).map(c => c.trim().replace(/^"|"$/g, ''));
+    if (cells.length < 2) continue;
+
+    const key = cells[0];
+    const rawVal = cells.slice(1).join(',');
+
+    const parts = rawVal.split(',').map(v => {
+      const n = parseFloat(v.trim());
+      return isNaN(n) ? v.trim() : n;
+    }).filter(v => v !== "");
+
+    if (parts.length > 1) {
+      metadata[key] = parts;
+    } else if (parts.length === 1) {
+      metadata[key] = parts[0];
+    }
+  }
+
+  if (Object.keys(metadata).length > 0) {
+    fs.writeFileSync(METADATA_FILE, JSON.stringify(metadata, null, 2));
+    saveHistory(METADATA_FILE, 'gameMetadata.json');
+    console.log(`Synced: ${METADATA_FILE}`);
+  }
+}
+
 syncIncome();
 syncConversions();
+syncMetadata();
 
-[INCOME_CSV, CONVERSION_CSV].forEach(f => {
+[INCOME_CSV, CONVERSION_CSV, METADATA_CSV].forEach(f => {
   if (fs.existsSync(f)) fs.unlinkSync(f);
 });

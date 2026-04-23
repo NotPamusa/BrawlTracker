@@ -1,24 +1,18 @@
-import { PlayerStats, RELEASED_BUFFIES_BRAWLER_COUNT } from './brawlAPI';
+import { PlayerStats } from './brawlAPI';
+import gameMetadata from "@/data/gameMetadata.json";
 
-/**
- * Total power points and coins to max a brawler from level 1.
- * Example arrays of cumulative vs cost:
- * Level 1->2 => 20 PP, 20 Coins
- * ... Total PP to Level 11 = 3720
- * ... Total Coins to Level 11 = 7765
- */
-const PP_TO_LEVEL = [0, 20, 50, 100, 190, 320, 530, 870, 1390, 2280, 3720];
-const COINS_TO_LEVEL = [0, 20, 55, 130, 270, 560, 1040, 1840, 3090, 4965, 7765];
-
-const PP_MAX = 3720;
-const COINS_MAX = 7765;
-
-const COST_GADGET = 1000;
-const COST_STAR_POWER = 2000;
-const COST_GEAR = 1000;
-const COST_HYPERCHARGE = 5000;
-const COST_BUFFIE_COINS = 1000;
-const COST_BUFFIE_PP = 2000;
+const {
+  ppToLevel: PP_TO_LEVEL,
+  coinsToLevel: COINS_TO_LEVEL,
+  ppMax: PP_MAX,
+  coinsMax: COINS_MAX,
+  costGadget: COST_GADGET,
+  costStarPower: COST_STAR_POWER,
+  costGear: COST_GEAR,
+  costHypercharge: COST_HYPERCHARGE,
+  costBuffieCoins: COST_BUFFIE_COINS,
+  costBuffiePP: COST_BUFFIE_PP
+} = gameMetadata;
 
 export interface CalculationResult {
   daysCoins: number;
@@ -73,12 +67,13 @@ export function calculateDaysToMax(
   let buffiesSurplus = 0;
 
   for (const brawler of player.brawlers) {
-    // 1. Current state for this brawler
+    // Add coins/pp spent to current level
     const lvlIdx = brawler.power - 1;
     currentPPProgression += PP_TO_LEVEL[lvlIdx] ?? 0;
     currentCoinsProgression += COINS_TO_LEVEL[lvlIdx] ?? 0;
 
-    // Items unlocked limit calculation
+    // Add cost of items (<item>Owned is number of this item the brawler has, counting up to the max amount we care about)
+    // Also count how many surplus items player
     const gadgetsOwned = Math.min(brawler.gadgets?.length ?? 0, targetGadgets);
     gadgetsSurplus += Math.max(0, (brawler.gadgets?.length ?? 0) - targetGadgets);
 
@@ -107,6 +102,7 @@ export function calculateDaysToMax(
 
     currentPPProgression += buffiesOwned * COST_BUFFIE_PP;
 
+
     // 2. Max state for this brawler
     nMaxPP += PP_MAX;
     nMaxCoins += COINS_MAX;
@@ -117,10 +113,8 @@ export function calculateDaysToMax(
     nMaxCoins += targetHC * COST_HYPERCHARGE;
   }
 
-  // Capping the total buffies to what is released globally
-  // We assume buffies are priority-filled for brawlers the player owns.
-  const applicableBrawlersForBuffies = Math.min(player.brawlers.length, RELEASED_BUFFIES_BRAWLER_COUNT);
-  const totalTargetBuffies = applicableBrawlersForBuffies * targetBuffies;
+  // Capping the total buffies to what is released in-game
+  const totalTargetBuffies = mode === 'FullMAX' ? gameMetadata.totalBrawlers * targetBuffies : gameMetadata.releasedBuffieBrawlerCount * targetBuffies;
 
   nMaxCoins += totalTargetBuffies * COST_BUFFIE_COINS;
   nMaxPP += totalTargetBuffies * COST_BUFFIE_PP;

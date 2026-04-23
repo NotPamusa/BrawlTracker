@@ -43,11 +43,13 @@ export interface PlayerStats {
   brawlers: BrawlerStat[];
 }
 
+import gameMetadata from "@/data/gameMetadata.json";
+
 /**
  * Global count of brawlers that currently have Buffies released.
- * Update this number manually as new waves of Buffies are added.
+ * Pulled from gameMetadata.json
  */
-export const RELEASED_BUFFIES_BRAWLER_COUNT = 12;
+export const RELEASED_BUFFIES_BRAWLER_COUNT = gameMetadata.releasedBuffieBrawlerCount;
 
 export async function getPlayer(tag: string): Promise<PlayerStats | null> {
   const cleanTag = encodeURIComponent(tag.replace('#', '').toUpperCase());
