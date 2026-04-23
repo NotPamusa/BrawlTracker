@@ -41,8 +41,7 @@ function parseCSV(filePath) {
   if (!fs.existsSync(filePath)) return null;
   const content = fs.readFileSync(filePath, 'utf8');
   const lines = content.split(/\r?\n/)
-    .filter(line => line.trim())
-    .map(line => line.replace(/^.*:.*:.*: /, ''));
+    .filter(line => line.trim());
   if (lines.length === 0) return null;
   const separator = lines[0].includes(';') ? ';' : ',';
   const headers = lines[0].split(separator).map(h => h.trim());
@@ -53,32 +52,37 @@ function saveHistory(filePath, originalName) {
   if (!fs.existsSync(HISTORY_DIR)) fs.mkdirSync(HISTORY_DIR, { recursive: true });
 
   const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
-  const currentContent = fs.readFileSync(filePath, 'utf8');
+  const currentContent = fs.readFileSync(filePath, 'utf8').trim();
 
-  // Find all matches for today
+  // Find all matches for today in history
+  // Format: YYYYMMDD_filename[_suffix]
+  const prefix = `${date}_${originalName}`;
   const existing = fs.readdirSync(HISTORY_DIR)
-    .filter(f => f.startsWith(date) && f.endsWith(originalName));
+    .filter(f => f.startsWith(prefix));
 
-  // Check latest match
   if (existing.length > 0) {
-    const getNum = (f) => {
-      const parts = f.split('_');
-      if (parts.length < 2) return 0;
-      const num = parseInt(parts[1]);
-      return isNaN(num) ? 0 : num;
-    };
-    existing.sort((a, b) => getNum(a) - getNum(b));
+    // Sort to find latest. Suffixes are _2, _3, etc.
+    existing.sort((a, b) => {
+      const getNum = (name) => {
+        const suffix = name.slice(prefix.length);
+        if (!suffix) return 1; // The one without suffix is the first one
+        return parseInt(suffix.replace('_', '')) || 1;
+      };
+      return getNum(a) - getNum(b);
+    });
+
     const latestFile = path.join(HISTORY_DIR, existing[existing.length - 1]);
-    const latestContent = fs.readFileSync(latestFile, 'utf8');
+    const latestContent = fs.readFileSync(latestFile, 'utf8').trim();
+    
     if (currentContent === latestContent) {
       console.log(`Skipping archive: ${originalName} (no changes)`);
       return;
     }
   }
 
-  // Determine suffix
+  // Next suffix
   const suffix = existing.length === 0 ? '' : `_${existing.length + 1}`;
-  const historyPath = path.join(HISTORY_DIR, `${date}${suffix}_${originalName}`);
+  const historyPath = path.join(HISTORY_DIR, `${prefix}${suffix}`);
   fs.writeFileSync(historyPath, currentContent);
   console.log(`Archived: ${historyPath}`);
 }
@@ -136,20 +140,34 @@ function syncConversions() {
   if (!parsed) return;
   const { lines, headers, separator } = parsed;
   const conversions = {};
+  
+  // Headers are: [empty], coins, powerPoints, etc.
   const targetHeaders = headers.map(h => normalizeKey(h));
+  
   for (let i = 1; i < lines.length; i++) {
     const cells = lines[i].split(separator).map(c => c.trim());
+    if (cells.length < 2) continue;
+    
     const sourceKey = normalizeKey(cells[0]);
+    if (!sourceKey) continue;
+    
     conversions[sourceKey] = {};
     for (let j = 1; j < cells.length; j++) {
-      const val = parseFloat(cells[j]) || 0;
+      const val = parseFloat(cells[j]);
       const targetKey = targetHeaders[j];
-      if (val > 0) conversions[sourceKey][targetKey] = val;
+      if (!isNaN(val) && val > 0 && targetKey) {
+        conversions[sourceKey][targetKey] = val;
+      }
     }
   }
-  fs.writeFileSync(OUTPUT_CONVERSION, JSON.stringify(conversions, null, 2));
-  saveHistory(OUTPUT_CONVERSION, 'valueConversions.json');
-  console.log(`Synced: ${OUTPUT_CONVERSION}`);
+  
+  if (Object.keys(conversions).length > 0) {
+    fs.writeFileSync(OUTPUT_CONVERSION, JSON.stringify(conversions, null, 2));
+    saveHistory(OUTPUT_CONVERSION, 'valueConversions.json');
+    console.log(`Synced: ${OUTPUT_CONVERSION}`);
+  } else {
+    console.warn("No conversion data found in CSV.");
+  }
 }
 
 function syncMetadata() {
