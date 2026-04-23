@@ -55,18 +55,22 @@ function saveHistory(filePath, originalName) {
   const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
   const currentContent = fs.readFileSync(filePath, 'utf8').trim();
 
+  const ext = path.extname(originalName);
+  const base = path.basename(originalName, ext);
+  const prefix = `${date}_${base}`;
+
   // Find all matches for today in history
-  // Format: YYYYMMDD_filename[_suffix]
-  const prefix = `${date}_${originalName}`;
+  // Format: YYYYMMDD_filename[_suffix].json
   const existing = fs.readdirSync(HISTORY_DIR)
-    .filter(f => f.startsWith(prefix));
+    .filter(f => f.startsWith(prefix) && f.endsWith(ext));
 
   if (existing.length > 0) {
-    // Sort to find latest. Suffixes are _2, _3, etc.
+    // Sort to find latest
     existing.sort((a, b) => {
       const getNum = (name) => {
-        const suffix = name.slice(prefix.length);
-        if (!suffix) return 1; // The one without suffix is the first one
+        const nameWithoutExt = path.basename(name, ext);
+        const suffix = nameWithoutExt.slice(prefix.length);
+        if (!suffix) return 1;
         return parseInt(suffix.replace('_', '')) || 1;
       };
       return getNum(a) - getNum(b);
@@ -83,7 +87,7 @@ function saveHistory(filePath, originalName) {
 
   // Next suffix
   const suffix = existing.length === 0 ? '' : `_${existing.length + 1}`;
-  const historyPath = path.join(HISTORY_DIR, `${prefix}${suffix}`);
+  const historyPath = path.join(HISTORY_DIR, `${prefix}${suffix}${ext}`);
   fs.writeFileSync(historyPath, currentContent);
   console.log(`Archived: ${historyPath}`);
 }

@@ -1,0 +1,38 @@
+{
+  "totalBrawlers": 101,
+  "releasedBuffieBrawlerCount": 12,
+  "ppToLevel": [
+    0,
+    20,
+    50,
+    100,
+    190,
+    320,
+    530,
+    870,
+    1390,
+    2280,
+    3720
+  ],
+  "coinsToLevel": [
+    0,
+    20,
+    55,
+    130,
+    270,
+    560,
+    1040,
+    1840,
+    3090,
+    4965,
+    7765
+  ],
+  "ppMax": 3720,
+  "coinsMax": 7765,
+  "costGadget": 1000,
+  "costStarPower": 2000,
+  "costGear": 1000,
+  "costHypercharge": 5000,
+  "costBuffieCoins": 1000,
+  "costBuffiePP": 2000
+}
