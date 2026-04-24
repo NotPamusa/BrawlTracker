@@ -35,7 +35,7 @@
         "gems": 80
       },
       "modifiers": {
-        "brawlPassDelta": 1,
+        "dailyActivityDelta": 1,
         "nBrawlPass_free": 1
       }
     },
@@ -49,7 +49,7 @@
         "gems": 130
       },
       "modifiers": {
-        "brawlPassDelta": 1,
+        "dailyActivityDelta": 1,
         "nBrawlPass_regular": 1
       }
     },
@@ -63,7 +63,7 @@
         "gems": 230
       },
       "modifiers": {
-        "brawlPassDelta": 1,
+        "dailyActivityDelta": 1,
         "nBrawlPass_plus": 1
       }
     },
@@ -76,7 +76,11 @@
         "bling": 1000
       },
       "modifiers": {
-        "brawlPassTailDelta": 1
+        "dailyActivityDelta": 1,
+        "finishQuests": 1,
+        "nBrawlPass_free": 1,
+        "nBrawlPass_regular": 1.5,
+        "nBrawlPass_plus": 2
       }
     },
     "rankedPass_free": {
@@ -89,7 +93,7 @@
         "gems": 50
       },
       "modifiers": {
-        "rankedPassDelta": 1,
+        "dailyActivityDelta": 1,
         "nRankedPass_free": 1
       }
     },
@@ -103,7 +107,7 @@
         "gems": 650
       },
       "modifiers": {
-        "rankedPassDelta": 1,
+        "dailyActivityDelta": 1,
         "nRankedPass_regular": 1
       }
     },
@@ -116,7 +120,10 @@
         "bling": 1000
       },
       "modifiers": {
-        "rankedPassTailDelta": 1
+        "dailyActivityDelta": 1,
+        "finishQuests": 1,
+        "nRankedPass_free": 1,
+        "nRankedPass_regular": 1
       }
     },
     "megaPig": {
@@ -128,6 +135,7 @@
         "bling": 106
       },
       "modifiers": {
+        "dailyActivityDelta": 1,
         "eventsDelta": 1
       }
     },
@@ -140,6 +148,7 @@
         "bling": 238.08
       },
       "modifiers": {
+        "dailyActivityDelta": 1,
         "eventsDelta": 1
       }
     },
@@ -151,6 +160,7 @@
         "credits": 290.3
       },
       "modifiers": {
+        "dailyActivityDelta": 1,
         "eventsDelta": 1
       }
     },
@@ -162,24 +172,16 @@
         "credits": 352
       },
       "modifiers": {
+        "dailyActivityDelta": 1,
+        "challengesDelta": 1,
         "bscChallengeDelta": 1
       }
     },
     "specialChallenges": {
       "daysPerCycle": 1,
       "modifiers": {
+        "dailyActivityDelta": 1,
         "challengesDelta": 1
-      }
-    },
-    "esportsRewards": {
-      "daysPerCycle": 30.416,
-      "resources": {
-        "coins": 450,
-        "powerPoints": 150,
-        "starrDrop": 4
-      },
-      "modifiers": {
-        "esportsRewards": 1
       }
     }
   }

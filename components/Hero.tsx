@@ -58,6 +58,7 @@ export default function HeroSection() {
         <EstimateCard
           title="Free to Play"
           days={2950}
+          disableGlow={true}
           borderColor="var(--card-free-border)"
           borderColorDim="var(--card-free-border-dim)"
           bgOuter="var(--card-free-bg)"
@@ -73,6 +74,7 @@ export default function HeroSection() {
         <EstimateCard
           title="Buy Every Brawl Pass"
           days={1095}
+          disableGlow={true}
           borderColor="var(--card-pass-border)"
           borderColorDim="var(--card-pass-border-dim)"
           bgOuter="var(--card-pass-bg)"
@@ -88,6 +90,7 @@ export default function HeroSection() {
         <EstimateCard
           title={`Buy Every Offer\nand Battle Pass`}
           days={343}
+          disableGlow={true}
           borderColor="var(--card-whale-border)"
           borderColorDim="var(--card-whale-border-dim)"
           bgOuter="var(--card-whale-bg)"

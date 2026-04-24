@@ -10,6 +10,8 @@ interface EstimateCardProps {
   bgInner: string;
   accentColor: string;
   icon: React.ReactNode;
+  disableGlow?: boolean;
+  suppressFirstPulse?: boolean;
 }
 
 export default function EstimateCard({
@@ -22,6 +24,8 @@ export default function EstimateCard({
   bgInner,
   accentColor,
   icon,
+  disableGlow,
+  suppressFirstPulse,
 }: EstimateCardProps) {
   return (
     <div
@@ -71,7 +75,7 @@ export default function EstimateCard({
                   className="text-6xl sm:text-7xl font-display font-bold tracking-tighter drop-shadow-md"
                   style={{ color: accentColor, textShadow: `0 0 20px ${accentColor}80` }}
                 >
-                  <CountUp end={days} />
+                  <CountUp end={days} disableGlow={disableGlow} suppressFirstPulse={suppressFirstPulse} />
                 </span>
                 <span
                   className="text-xl sm:text-2xl font-bold uppercase tracking-widest mt-1 opacity-80"

@@ -29,6 +29,7 @@ export const metadata: Metadata = {
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { SettingsProvider } from "@/context/SettingsContext";
 
 export default function RootLayout({
   children,
@@ -42,11 +43,13 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
     >
       <body className="min-h-full flex flex-col bg-[var(--brawl-bg-deep)]">
-        <Navbar />
-        <div className="flex-grow flex flex-col">
-          {children}
-        </div>
-        <Footer />
+        <SettingsProvider>
+          <Navbar />
+          <div className="flex-grow flex flex-col">
+            {children}
+          </div>
+          <Footer />
+        </SettingsProvider>
       </body>
     </html>
   );

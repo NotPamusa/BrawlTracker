@@ -40,6 +40,8 @@ export interface PlayerStats {
     tag: string;
     name: string;
   };
+  highestRank?: number;
+  maxbscWins?: number;
   brawlers: BrawlerStat[];
 }
 

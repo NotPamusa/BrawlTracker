@@ -30,22 +30,19 @@
     "credits": 8.7
   },
   "epicDrop": {
-    "coins": 100,
-    "powerPoints": 70,
-    "credits": 100,
-    "bling": 10
+    "coins": 70.4,
+    "powerPoints": 13.8,
+    "credits": 8.7
   },
   "mythicDrop": {
-    "coins": 200,
-    "powerPoints": 100,
-    "credits": 300,
-    "bling": 30
+    "coins": 70.4,
+    "powerPoints": 13.8,
+    "credits": 8.7
   },
   "legendaryDrop": {
-    "coins": 700,
-    "powerPoints": 200,
-    "credits": 500,
-    "bling": 50
+    "coins": 70.4,
+    "powerPoints": 13.8,
+    "credits": 8.7
   },
   "chaosDrop": {
     "coins": 324.2,

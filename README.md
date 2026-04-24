@@ -78,7 +78,7 @@ BrawlPass <=============>
 
 Input number field
 How much money do you spend on brawl on average each month (not including battle pass)
-monthlySpending = _____ $USD/€EUR/... [currency picker]
+monthlySpending = _____ $USD [currency picker]
 
 Dropdown picker
 if input field above >0 : How do you spend your money outside battle passes? else: If you were to spend money outside passes, what would you buy?
@@ -88,7 +88,7 @@ High efficiency offers for resources and skins. - moneyEfficiency = 0.6
 Mostly skins - moneyEfficiency = 0.2
 
 Money efficiency diminishes with more money spent (there just aren't that many overpowered offers)
-moneyEfficiency =
+moneyEfficiency = (diminishing value formula)
 
 
 

@@ -46,14 +46,13 @@ export interface CalculationResult {
 }
 
 export interface UserSettings {
-  dailyActivityDelta: number;
-  challengesDelta: number;
-  eventsDelta: number;
+  dailyActivityChoice: number;
+  eventsChoice: string;
   finishQuests: boolean;
   monthlySpending: number;
   currency: string;
-  moneyEfficiency: number;
-  gemEfficiency: number;
+  moneyEfficiencyChoice: number;
+  gemEfficiencyChoice: number;
   isRankedPlayer: boolean;
   esportsRewards: boolean;
   nBrawlPass_regular: number;
@@ -61,7 +60,6 @@ export interface UserSettings {
   nRankedPass_free: number;
   nRankedPass_regular: number;
   nBrawlPass_free: number;
-  bscChallengeDelta: number;
   stash: Record<string, number>;
 }
 
@@ -71,7 +69,7 @@ export interface IncomeSource {
   modifiers?: Record<string, number>;
 }
 
-export interface DailyResources {
+export interface ResourceList {
   coins: number;
   powerPoints: number;
   credits: number;
@@ -84,9 +82,9 @@ export function calculateDaysToMax(
   mode: 'MAX' | 'FullMAX' = 'MAX',
   settings?: UserSettings
 ): CalculationResult {
-  let currentCoinsProgression = 0;
-  let currentPPProgression = 0;
-  let currentCreditsProgression = 0;
+  let currentCoinsProgression = settings?.stash?.coins || 0;
+  let currentPPProgression = settings?.stash?.powerPoints || 0;
+  let currentCreditsProgression = settings?.stash?.credits || 0;
 
   let nMaxCredits = 0;
 
@@ -165,15 +163,6 @@ export function calculateDaysToMax(
   let m_dailyResources = calculateDailyResources(player, settings);
 
 
-
-
-
-
-
-
-
-
-
   const requiredCoins = Math.max(0, nMaxCoins - currentCoinsProgression);
   const requiredPP = Math.max(0, nMaxPP - currentPPProgression);
   const requiredCredits = Math.max(0, nMaxCredits - currentCreditsProgression);
@@ -202,32 +191,140 @@ export function calculateDaysToMax(
   };
 }
 
-function calculateDailyResources(player: PlayerStats, settings?: UserSettings): DailyResources {
-  const daily: DailyResources = {
+export function computeSettingDeltas(player: PlayerStats, settings: UserSettings): Record<string, number> {
+  const { 
+    dailyActivityChoice, eventsChoice, finishQuests, 
+    nBrawlPass_regular, nBrawlPass_plus, nBrawlPass_free,
+    nRankedPass_regular, nRankedPass_free,
+    monthlySpending, moneyEfficiencyChoice, gemEfficiencyChoice,
+    isRankedPlayer, esportsRewards
+  } = settings;
+
+  const dailyActivityDelta = dailyActivityChoice;
+  
+  let challengesDelta = 1;
+  let eventsDelta = 1;
+  if (eventsChoice === 'always') { challengesDelta = 1; eventsDelta = 1; }
+  else if (eventsChoice === 'challenges') { challengesDelta = 1; eventsDelta = 0.7; }
+  else if (eventsChoice === 'events') { challengesDelta = 0.7; eventsDelta = 1; }
+  else if (eventsChoice === 'sometimes') { challengesDelta = 0.6; eventsDelta = 0.6; }
+  else if (eventsChoice === 'rarely') { challengesDelta = 0.4; eventsDelta = 0.4; }
+
+  const maxbscWins = player.maxbscWins ?? 15;
+  const bscChallengeDelta = challengesDelta * (maxbscWins / 15);
+
+  challengesDelta *= dailyActivityDelta;
+  eventsDelta *= dailyActivityDelta;
+
+  const brawlPassDelta = finishQuests ? 1 : (dailyActivityDelta > 0.5 ? 1 : 0.8);
+  
+  let brawlPassTailDelta = finishQuests ? (1 * dailyActivityDelta) : (0.7 * dailyActivityDelta);
+  brawlPassTailDelta += (nBrawlPass_regular * 12 * 0.05) + (nBrawlPass_plus * 12 * 0.1);
+
+  const moneyEfficiency = moneyEfficiencyChoice * (50 / (50 + monthlySpending));
+  const gemEfficiency = gemEfficiencyChoice;
+
+  let rankedPassDelta = 1;
+  let rankedPassTailDelta = 1;
+  
+  // Convert API rank (1-19) to our 1-7 scale if it exists, otherwise default to Diamond (4)
+  const apiRank = player.highestRank ?? 10; // Default to Diamond 1
+  const peakRank = apiRank === 19 ? 7 : Math.min(7, Math.floor((apiRank - 1) / 3) + 1);
+
+  if (isRankedPlayer) {
+    const normalizedRank = (Math.min(peakRank, 5) - 1) / 4;
+    rankedPassDelta = 0.6 + (0.4 * normalizedRank);
+    
+    const normalizedRankTail = (Math.min(peakRank, 6) - 1) / 5;
+    rankedPassTailDelta = 0.4 + (0.6 * normalizedRankTail);
+  } else {
+    const normalizedRank = (peakRank - 1) / 6;
+    rankedPassDelta = 0.0 + (1.0 * normalizedRank);
+    
+    rankedPassTailDelta = Math.max(0, -0.2 + (1.2 * normalizedRank));
+  }
+
+  return {
+    dailyActivityDelta,
+    challengesDelta,
+    eventsDelta,
+    bscChallengeDelta,
+    brawlPassDelta,
+    brawlPassTailDelta,
+    rankedPassDelta,
+    rankedPassTailDelta,
+    moneyEfficiency,
+    gemEfficiency,
+    isRankedPlayer: isRankedPlayer ? 1 : 0,
+    esportsRewards: esportsRewards ? 1 : 0,
+    finishQuests: finishQuests ? 1 : 0,
+    nBrawlPass_regular,
+    nBrawlPass_plus,
+    nBrawlPass_free,
+    nRankedPass_regular,
+    nRankedPass_free
+  };
+}
+
+function calculateDailyResources(player: PlayerStats, settings?: UserSettings): ResourceList {
+  const daily: ResourceList = {
     coins: 0,
     powerPoints: 0,
     credits: 0,
     gems: 0,
     bling: 0
   };
+  //just need player stats for rank and trophies maybe in the future
 
   if (!settings) return daily;
 
   const sources = (incomeData as any).incomeSources;
+  const computedModifiers = computeSettingDeltas(player, settings);
 
+  //foreach incomeSource inside sources, find modifier multiplier, and then multiply that by the incomesource (each resource)
   for (const sourceId in sources) {
     const source = sources[sourceId] as IncomeSource;
-    const days = source.daysPerCycle || 1;
+    const daysPerCycle = source.daysPerCycle || 1;
 
-    let multiplier = getModification(source, settings);
+    // source contains list of which modifiers we use. getModifications finds them in usersettings and returns the multiplied result.
+    let multiplier = getModification(source, computedModifiers);
 
-    for (const resId in source.resources) {
-      if (resId in daily) {
-        const amount = source.resources[resId];
-        (daily as any)[resId] += (amount * multiplier) / days;
+    for (const resourceId in source.resources) {
+      if (resourceId in daily) {
+        const amount = source.resources[resourceId];
+        (daily as any)[resourceId] += (amount * multiplier) / daysPerCycle;
       }
     }
   }
+
+  // Handle Monthly Spending
+  if (settings.monthlySpending > 0) {
+    let currencyMultiplier = 1;
+    if (settings.currency === "EUR") currencyMultiplier = 1.05;
+    if (settings.currency === "GBP") currencyMultiplier = 1.25;
+    if (settings.currency === "BRL") currencyMultiplier = 0.20;
+
+    const effectiveUsd = settings.monthlySpending * currencyMultiplier;
+    // Base value: $1 = 1200 coins equivalent (distributed between coins, PP, credits)
+    // Scaled by the efficiency (which includes diminishing returns)
+    const dailySpendCoins = (effectiveUsd * 800 * computedModifiers.moneyEfficiency) / 30.416;
+    const dailySpendPP = (effectiveUsd * 300 * computedModifiers.moneyEfficiency) / 30.416;
+    const dailySpendCredits = (effectiveUsd * 100 * computedModifiers.moneyEfficiency) / 30.416;
+
+    daily.coins += dailySpendCoins;
+    daily.powerPoints += dailySpendPP;
+    daily.credits += dailySpendCredits;
+  }
+
+  // Handle Gem Efficiency (convert gems income to progress)
+  // If gemEfficiency is 1.0, they spend all gems on progress. If 0.2, they spend 20% on progress, 80% on skins.
+  const progressGems = daily.gems * settings.gemEfficiencyChoice;
+  // 1 Gem ~= 20 Coins equivalent
+  daily.coins += progressGems * 15;
+  daily.powerPoints += progressGems * 5;
+  
+  // We subtract the gems that were spent on progress (if they want to see "net gems" they can, but usually gems are spent)
+  daily.gems -= progressGems;
 
   return daily;
 }
@@ -235,21 +332,18 @@ function calculateDailyResources(player: PlayerStats, settings?: UserSettings): 
 
 function getModification(
   incomeSource: IncomeSource,
-  settings: UserSettings
+  computedModifiers: Record<string, number>
 ): number {
   let result = 1;
 
   if (!incomeSource.modifiers) return result;
 
   for (const key in incomeSource.modifiers) {
-    const modifierKey = key as keyof UserSettings;
-
     const sourceValue = incomeSource.modifiers[key] ?? 1;
-    // Default to 0 if the setting is missing, except for specific keys that should default to 1 if we want "always on"
-    // However, most deltas/counts in settings should be 0 if not provided.
-    const userValue = (settings[modifierKey] as number) ?? 0;
+    const userValue = computedModifiers[key] ?? 1;
+    // should never have empty numbers file modifier, and neither userSettings deltas, so if it is, probably a mistake and we can multiply by 1 so nothing changes
 
-    result = result * (sourceValue * userValue);
+    result *= (sourceValue * userValue);
   }
 
   return result;
