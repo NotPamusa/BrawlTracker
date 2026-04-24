@@ -68,7 +68,7 @@ export async function getPlayer(tag: string): Promise<PlayerStats | null> {
         'Authorization': `Bearer ${apiKey}`,
         'Accept': 'application/json'
       },
-      next: { revalidate: 3600 }
+      next: { revalidate: 0 } // Disable cache for verification/real-time checks
     });
 
     if (!res.ok) {

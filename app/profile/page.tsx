@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
+import Link from "next/link";
+import { getPlayer } from "@/utils/brawlAPI";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -17,16 +19,34 @@ export default function ProfilePage() {
   const [username, setUsername] = useState("");
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) {
         router.push("/login");
       } else {
         setUser(user);
-        // Ideally fetch profile data here (username, linked account, etc.)
+        
+        // Fetch real profile data
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (profile?.player_tag && profile.is_verified) {
+          const player = await getPlayer(profile.player_tag);
+          if (player) {
+            setLinkedAccount({
+              name: player.name,
+              tag: `#${profile.player_tag}`,
+              icon: player.icon.id,
+              trophies: player.trophies
+            });
+          }
+        }
       }
       setLoading(false);
     });
-  }, [router, supabase.auth]);
+  }, [router, supabase]);
 
   if (loading) return null;
 
@@ -53,18 +73,31 @@ export default function ProfilePage() {
                 </h2>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-black/40 rounded-full flex items-center justify-center">
-                      <span className="text-xl">🏆</span>
+                    <div className="w-12 h-12 bg-black/40 rounded-full flex items-center justify-center overflow-hidden border border-white/10">
+                      <img 
+                        src={`/profile_pictures/pfp_${linkedAccount.icon}.png`} 
+                        alt="PFP" 
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>';
+                        }}
+                      />
                     </div>
                     <div>
                       <p className="font-display text-2xl text-[var(--brawl-text)]">{linkedAccount.name}</p>
                       <p className="text-sm font-bold text-[var(--brawl-yellow)] tracking-wider">
-                        {linkedAccount.tag}
+                        {linkedAccount.tag} • 🏆 {linkedAccount.trophies.toLocaleString()}
                       </p>
                     </div>
                   </div>
 
-                  <button className="chamfer-btn-secondary chamfer-sm">
+                  <button 
+                    onClick={async () => {
+                      await supabase.from('profiles').update({ player_tag: null, is_verified: false }).eq('id', user.id);
+                      setLinkedAccount(null);
+                    }}
+                    className="chamfer-btn-secondary chamfer-sm"
+                  >
                     <div className="btn-inner chamfer-sm !py-2 !px-4 !text-xs">
                       UNLINK
                     </div>
@@ -73,34 +106,36 @@ export default function ProfilePage() {
               </div>
             </div>
           ) : (
-            <div className="bg-[var(--brawl-green)] chamfer-md p-[2px] shadow-[0_0_15px_rgba(76,255,80,0.15)] hover:shadow-[0_0_25px_rgba(76,255,80,0.25)] transition-shadow">
-              <div className="p-6 sm:p-8 chamfer-md bg-[var(--card-whale-bg)] relative text-center flex flex-col items-center justify-center gap-4">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(76,255,80,0.15),transparent_70%)] pointer-events-none"></div>
+            <Link href="/link-account" className="block group">
+              <div className="bg-[var(--brawl-green)] chamfer-md p-[2px] shadow-[0_0_15px_rgba(76,255,80,0.15)] group-hover:shadow-[0_0_25px_rgba(76,255,80,0.25)] transition-shadow">
+                <div className="p-6 sm:p-8 chamfer-md bg-[var(--card-whale-bg)] relative text-center flex flex-col items-center justify-center gap-4">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(76,255,80,0.15),transparent_70%)] pointer-events-none"></div>
 
-                <div className="relative z-10 w-full flex flex-col items-center">
-                  <div className="w-12 h-12 mb-2 bg-[rgba(76,255,80,0.15)] rounded-full flex items-center justify-center text-[var(--brawl-green)]">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-                    </svg>
-                  </div>
-                  <h2 className="text-xl sm:text-2xl font-display font-bold text-[var(--brawl-green)] uppercase tracking-wide">
-                    Link Your Brawl Stars Account
-                  </h2>
-                  <p className="text-sm font-bold text-[var(--brawl-green)]/70 uppercase tracking-widest mt-1">
-                    Connect profile to start tracking your progress
-                  </p>
-                </div>
-
-                <div className="hex-btn-wrap mt-4 relative z-10">
-                  <button className="hex-btn !bg-[var(--brawl-green)]">
-                    <div className="hex-btn-inner !text-[var(--brawl-green)] !bg-[var(--card-whale-bg-inner)]">
-                      LINK ACCOUNT NOW
+                  <div className="relative z-10 w-full flex flex-col items-center">
+                    <div className="w-12 h-12 mb-2 bg-[rgba(76,255,80,0.15)] rounded-full flex items-center justify-center text-[var(--brawl-green)]">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                      </svg>
                     </div>
-                  </button>
+                    <h2 className="text-xl sm:text-2xl font-display font-bold text-[var(--brawl-green)] uppercase tracking-wide">
+                      Link Your Brawl Stars Account
+                    </h2>
+                    <p className="text-sm font-bold text-[var(--brawl-green)]/70 uppercase tracking-widest mt-1">
+                      Connect profile to start tracking your progress
+                    </p>
+                  </div>
+
+                  <div className="hex-btn-wrap mt-4 relative z-10">
+                    <div className="hex-btn !bg-[var(--brawl-green)]">
+                      <div className="hex-btn-inner !text-[var(--brawl-green)] !bg-[var(--card-whale-bg-inner)]">
+                        LINK ACCOUNT NOW
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            </Link>
           )}
         </div>
 
