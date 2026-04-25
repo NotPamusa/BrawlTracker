@@ -107,9 +107,11 @@ Mostly skins - gemEfficiency = 0.2
 We can use peak rank to adjust delta.
 Checkbox questions
 "Do you play ranked often?": Yes / No
-yes -> rankedPassDelta = 0.8 +- 0.2 (scale from bronze to mythic) | no -> rankedPassDelta = 0.5 +- 0.5 (scale from bronze to master)
+yes -> rankedPassDelta = 0.8 +- 0.2 (scale from bronze to mythic)
+no  -> rankedPassDelta = 0.5 +- 0.5 (scale from bronze to master)
 
-yes -> rankedPassTailDelta = 0.7 +- 0.3 (scale from bronze to legendary) | no -> rankedPassTailDelta = 0.4 +- 0.6 (scale from bronze to master)
+yes -> rankedPassTailDelta = 0.7 +- 0.3 (scale from bronze to legendary)
+no  -> rankedPassTailDelta = 0.4 +- 0.6 (scale from bronze to master)
 
 
 

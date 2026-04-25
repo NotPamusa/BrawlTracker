@@ -4,46 +4,49 @@ import { useState, useRef, useEffect } from "react";
 import valueConversions from "@/data/valueConversions.json";
 import { useSettings } from "@/context/SettingsContext";
 import { PlayerStats } from "@/utils/brawlAPI";
+import { DEFAULT_SETTINGS, ACTIVE_LOW_SPENDER_SETTINGS, ACTIVE_HIGH_SPENDER_SETTINGS, WHALE_SETTINGS } from "@/utils/constants";
 
 export default function CalculatorSettings({ player }: { player: PlayerStats }) {
   const { settings, applyTuning } = useSettings();
   const [isOpen, setIsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"general" | "stash" | "presets">("general");
 
   // Local state for the form, initialized from context settings
-  const [dailyActivityChoice, setDailyActivityChoice] = useState((settings.dailyActivityChoice ?? 1).toString());
+  const [dailyActivityChoice, setDailyActivityChoice] = useState(settings.dailyActivityChoice ?? "daily");
   const [eventsChoice, setEventsChoice] = useState(settings.eventsChoice ?? "always");
   const [finishQuests, setFinishQuests] = useState(settings.finishQuests ?? true);
 
-  const [monthlySpending, setMonthlySpending] = useState(settings.monthlySpending > 0 ? settings.monthlySpending.toString() : "");
+  const [monthlySpending, setMonthlySpending] = useState(settings.nMonthlySpending > 0 ? settings.nMonthlySpending.toString() : "");
   const [currency, setCurrency] = useState(settings.currency ?? "USD");
-  const [moneyEfficiencyChoice, setMoneyEfficiencyChoice] = useState((settings.moneyEfficiencyChoice ?? 1).toString());
-  const [gemEfficiencyChoice, setGemEfficiencyChoice] = useState((settings.gemEfficiencyChoice ?? 1).toString());
+  const [moneyEfficiencyChoice, setMoneyEfficiencyChoice] = useState(settings.moneyEfficiencyChoice ?? "max_efficiency");
+  const [gemEfficiencyChoice, setGemEfficiencyChoice] = useState(settings.gemEfficiencyChoice ?? "max_efficiency");
 
   const [isRankedPlayer, setIsRankedPlayer] = useState(settings.isRankedPlayer ?? false);
   const [esportsRewards, setEsportsRewards] = useState(settings.esportsRewards ?? false);
 
-  const [nBrawlPass_regular, setNBrawlPass_regular] = useState((settings.nBrawlPass_regular ?? 0) * 12);
-  const [nBrawlPass_plus, setNBrawlPass_plus] = useState((settings.nBrawlPass_plus ?? 0) * 12);
-  const [nRankedPass_free, setNRankedPass_free] = useState((settings.nRankedPass_free ?? 1) * 4);
-  const [nRankedPass_regular, setNRankedPass_regular] = useState((settings.nRankedPass_regular ?? 0) * 4);
+  const [nBrawlPass_regular, setNBrawlPass_regular] = useState(settings.nYearlyBrawlPass_regular ?? 0);
+  const [nBrawlPass_plus, setNBrawlPass_plus] = useState(settings.nYearlyBrawlPass_plus ?? 0);
+  const [nRankedPass_free, setNRankedPass_free] = useState(settings.nYearlyRankedPass_free ?? 4);
+  const [nRankedPass_regular, setNRankedPass_regular] = useState(settings.nYearlyRankedPass_regular ?? 0);
 
   const [stash, setStash] = useState<Record<string, number>>(settings.stash);
+  const [showUnclaimed, setShowUnclaimed] = useState(false);
 
   // Sync local state if context settings change externally (e.g. on mount/load from storage)
   useEffect(() => {
-    setDailyActivityChoice((settings.dailyActivityChoice ?? 1).toString());
+    setDailyActivityChoice(settings.dailyActivityChoice ?? "daily");
     setEventsChoice(settings.eventsChoice ?? "always");
     setFinishQuests(settings.finishQuests ?? true);
-    setMonthlySpending(settings.monthlySpending > 0 ? settings.monthlySpending.toString() : "");
+    setMonthlySpending(settings.nMonthlySpending > 0 ? settings.nMonthlySpending.toString() : "");
     setCurrency(settings.currency ?? "USD");
-    setMoneyEfficiencyChoice((settings.moneyEfficiencyChoice ?? 1).toString());
-    setGemEfficiencyChoice((settings.gemEfficiencyChoice ?? 1).toString());
+    setMoneyEfficiencyChoice(settings.moneyEfficiencyChoice ?? "max_efficiency");
+    setGemEfficiencyChoice(settings.gemEfficiencyChoice ?? "max_efficiency");
     setIsRankedPlayer(settings.isRankedPlayer ?? false);
     setEsportsRewards(settings.esportsRewards ?? false);
-    setNBrawlPass_regular((settings.nBrawlPass_regular ?? 0) * 12);
-    setNBrawlPass_plus((settings.nBrawlPass_plus ?? 0) * 12);
-    setNRankedPass_free((settings.nRankedPass_free ?? 1) * 4);
-    setNRankedPass_regular((settings.nRankedPass_regular ?? 0) * 4);
+    setNBrawlPass_regular(settings.nYearlyBrawlPass_regular ?? 0);
+    setNBrawlPass_plus(settings.nYearlyBrawlPass_plus ?? 0);
+    setNRankedPass_free(settings.nYearlyRankedPass_free ?? 4);
+    setNRankedPass_regular(settings.nYearlyRankedPass_regular ?? 0);
     setStash(settings.stash ?? {});
   }, [settings]);
 
@@ -59,22 +62,40 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
 
   const close = () => setIsOpen(false);
 
+  const handleLoadPreset = (preset: typeof DEFAULT_SETTINGS) => {
+    setDailyActivityChoice(preset.dailyActivityChoice);
+    setEventsChoice(preset.eventsChoice);
+    setFinishQuests(preset.finishQuests);
+    setMonthlySpending(preset.nMonthlySpending > 0 ? preset.nMonthlySpending.toString() : "");
+    setCurrency(preset.currency);
+    setMoneyEfficiencyChoice(preset.moneyEfficiencyChoice);
+    setGemEfficiencyChoice(preset.gemEfficiencyChoice);
+    setIsRankedPlayer(preset.isRankedPlayer);
+    setEsportsRewards(preset.esportsRewards);
+    setNBrawlPass_regular(preset.nYearlyBrawlPass_regular);
+    setNBrawlPass_plus(preset.nYearlyBrawlPass_plus);
+    setNRankedPass_free(preset.nYearlyRankedPass_free);
+    setNRankedPass_regular(preset.nYearlyRankedPass_regular);
+    setStash(preset.stash);
+    setActiveTab("general");
+  };
+
   const handleApply = () => {
     applyTuning({
-      dailyActivityChoice: parseFloat(dailyActivityChoice),
-      eventsChoice,
+      dailyActivityChoice: dailyActivityChoice as any,
+      eventsChoice: eventsChoice as any,
       finishQuests,
-      monthlySpending: parseFloat(monthlySpending) || 0,
+      nMonthlySpending: parseFloat(monthlySpending) || 0,
       currency,
-      moneyEfficiencyChoice: parseFloat(moneyEfficiencyChoice),
-      gemEfficiencyChoice: parseFloat(gemEfficiencyChoice),
+      moneyEfficiencyChoice: moneyEfficiencyChoice as any,
+      gemEfficiencyChoice: gemEfficiencyChoice as any,
       isRankedPlayer,
       esportsRewards,
-      nBrawlPass_regular: nBrawlPass_regular / 12,
-      nBrawlPass_plus: nBrawlPass_plus / 12,
-      nRankedPass_free: nRankedPass_free / 4,
-      nRankedPass_regular: nRankedPass_regular / 4,
-      nBrawlPass_free: (12 - nBrawlPass_regular - nBrawlPass_plus) / 12,
+      nYearlyBrawlPass_regular: nBrawlPass_regular,
+      nYearlyBrawlPass_plus: nBrawlPass_plus,
+      nYearlyRankedPass_free: nRankedPass_free,
+      nYearlyRankedPass_regular: nRankedPass_regular,
+      nYearlyBrawlPass_free: 12 - nBrawlPass_regular - nBrawlPass_plus,
       stash
     });
     close();
@@ -128,9 +149,34 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
                   </button>
                 </div>
 
+                {/* Tabs Header */}
+                <div className="flex border-b-2 border-white/10 bg-black/40 text-sm font-black uppercase tracking-wider text-white/50 relative z-10 shrink-0">
+                  <button 
+                    onClick={() => setActiveTab("general")}
+                    className={`flex-1 py-3 transition-colors ${activeTab === "general" ? "bg-[var(--brawl-blue)] text-white shadow-[inset_0_-3px_0_rgba(255,255,255,0.3)]" : "hover:bg-white/10 hover:text-white"}`}
+                  >
+                    General
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab("stash")}
+                    className={`flex-1 py-3 transition-colors border-l border-white/5 ${activeTab === "stash" ? "bg-orange-600 text-white shadow-[inset_0_-3px_0_rgba(255,255,255,0.3)]" : "hover:bg-white/10 hover:text-white"}`}
+                  >
+                    Stash
+                  </button>
+                  <button 
+                    onClick={() => setActiveTab("presets")}
+                    className={`flex-1 py-3 transition-colors border-l border-white/5 ${activeTab === "presets" ? "bg-purple-600 text-white shadow-[inset_0_-3px_0_rgba(255,255,255,0.3)]" : "hover:bg-white/10 hover:text-white"}`}
+                  >
+                    Presets
+                  </button>
+                </div>
+
                 {/* Scrollable Content */}
                 <div className="p-6 pb-12 space-y-10 overflow-y-auto custom-scrollbar flex-1">
-                  {/* Play Rate Section */}
+                  
+                  {activeTab === "general" && (
+                    <>
+                      {/* Play Rate Section */}
                   <section className="space-y-6">
                     <h3 className="text-xl font-display font-black text-white border-b-2 border-[var(--brawl-blue)] pb-1 inline-block uppercase tracking-normal">Activity Profile</h3>
 
@@ -140,15 +186,15 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
                         <div className="chamfer-sm bg-black/60">
                           <select
                             value={dailyActivityChoice}
-                            onChange={e => setDailyActivityChoice(e.target.value)}
+                            onChange={e => setDailyActivityChoice(e.target.value as any)}
                             className="w-full bg-transparent p-3 text-white font-bold outline-none appearance-none"
                             style={{ backgroundImage: 'none' }}
                           >
-                            <option value="1">1+ hours every day</option>
-                            <option value="0.95">6+ wins almost every day</option>
-                            <option value="0.8">5-6 days a week</option>
-                            <option value="0.6">4 days a week</option>
-                            <option value="0.5">Only weekends and days off</option>
+                            <option value="hardcore">1+ hours every day</option>
+                            <option value="daily">6+ wins almost every day</option>
+                            <option value="active">5-6 days a week</option>
+                            <option value="regular">4 days a week</option>
+                            <option value="casual">Only weekends and days off</option>
                           </select>
                         </div>
                       </div>
@@ -160,7 +206,7 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
                         <div className="chamfer-sm bg-black/60">
                           <select
                             value={eventsChoice}
-                            onChange={e => setEventsChoice(e.target.value)}
+                            onChange={e => setEventsChoice(e.target.value as any)}
                             className="w-full bg-transparent p-3 text-white font-bold outline-none appearance-none"
                             style={{ backgroundImage: 'none' }}
                           >
@@ -269,14 +315,14 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
                         <div className="chamfer-sm bg-black/60">
                           <select
                             value={moneyEfficiencyChoice}
-                            onChange={e => setMoneyEfficiencyChoice(e.target.value)}
+                            onChange={e => setMoneyEfficiencyChoice(e.target.value as any)}
                             className="w-full bg-transparent p-3 text-white font-bold outline-none appearance-none"
                             style={{ backgroundImage: 'none' }}
                           >
-                            <option value="1">Only highest efficiency resource offers (gems &gt;30% off, coins/pwp 80+% off)</option>
-                            <option value="0.8">High efficiency offers for resources</option>
-                            <option value="0.6">High efficiency offers for resources and skins</option>
-                            <option value="0.2">Mostly skins</option>
+                            <option value="max_efficiency">Only highest efficiency resource offers (gems &gt;30% off, coins/pwp 80+% off)</option>
+                            <option value="high_efficiency">High efficiency offers for resources</option>
+                            <option value="mixed">High efficiency offers for resources and skins</option>
+                            <option value="skins">Mostly skins</option>
                           </select>
                         </div>
                       </div>
@@ -288,14 +334,14 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
                         <div className="chamfer-sm bg-black/60">
                           <select
                             value={gemEfficiencyChoice}
-                            onChange={e => setGemEfficiencyChoice(e.target.value)}
+                            onChange={e => setGemEfficiencyChoice(e.target.value as any)}
                             className="w-full bg-transparent p-3 text-white font-bold outline-none appearance-none"
                             style={{ backgroundImage: 'none' }}
                           >
-                            <option value="1">Only highest efficiency offers (like hypercharge for 79 gems)</option>
-                            <option value="0.8">High efficiency offers for resources</option>
-                            <option value="0.6">High efficiency offers for resources and skins</option>
-                            <option value="0.2">Mostly skins</option>
+                            <option value="max_efficiency">Only highest efficiency offers (like hypercharge for 79 gems)</option>
+                            <option value="high_efficiency">High efficiency offers for resources</option>
+                            <option value="mixed">High efficiency offers for resources and skins</option>
+                            <option value="skins">Mostly skins</option>
                           </select>
                         </div>
                       </div>
@@ -318,13 +364,7 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
                           <svg className="w-6 h-6 text-purple-400 opacity-0 peer-checked:opacity-100 transition-all scale-50 peer-checked:scale-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-sm font-black text-white uppercase tracking-normal leading-tight">Play Ranked often?</span>
-                          <span className="text-[10px] font-bold text-white/40 uppercase tracking-tighter">Peak Rank: {(() => {
-                            const apiRank = player.highestRank ?? 10;
-                            const ranks = ["Bronze", "Silver", "Gold", "Diamond", "Mythic", "Legendary", "Masters"];
-                            const rankIdx = apiRank === 19 ? 6 : Math.min(6, Math.floor((apiRank - 1) / 3));
-                            return ranks[rankIdx];
-                          })()} (auto)</span>
+                          <span className="text-sm font-black text-white uppercase tracking-normal leading-tight">Play Ranked?</span>
                         </div>
                       </label>
 
@@ -343,34 +383,125 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
                     </div>
                   </section>
 
-                  {/* Stash Section */}
-                  <section className="space-y-6 pt-4 border-t border-white/5">
-                    <div className="flex items-center justify-between border-b-2 border-orange-500 pb-1">
-                      <h3 className="text-xl font-display font-black text-white uppercase tracking-normal">Offline Stash</h3>
-                      <span className="text-[10px] font-black bg-orange-500 text-black px-2 py-0.5 rounded animate-pulse">HIDDEN DATA</span>
-                    </div>
-                    <p className="text-xs font-bold text-[var(--brawl-text-dim)] uppercase leading-relaxed">Input resources held in your account that the API cannot detect (unclaimed boxes, bank, etc).</p>
+                  {/* End General Tab */}
+                    </>
+                  )}
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                      {stashKeys.map(key => (
-                        <div key={key} className="space-y-2 group">
-                          <label className="text-[10px] font-black text-[var(--brawl-text-dim)] uppercase tracking-widest group-hover:text-white transition-colors block">{key}</label>
-                          <div className="chamfer-sm p-[1.5px] bg-white/5 focus-within:bg-orange-500 transition-all shadow-inner">
-                            <div className="chamfer-sm bg-black/60 flex items-center">
-                              <input
-                                type="number"
-                                min="0"
-                                placeholder="0"
-                                value={stash[key] === 0 ? '' : stash[key] || ''}
-                                onChange={e => handleStashChange(key, e.target.value)}
-                                className="w-full bg-transparent p-2.5 text-white font-black outline-none text-sm"
-                              />
-                            </div>
-                          </div>
+                  {activeTab === "stash" && (() => {
+                    const primaryStash = ['coins', 'powerPoints', 'gems'];
+                    const secondaryStash = stashKeys.filter(k => !primaryStash.includes(k));
+
+                    return (
+                      <section className="space-y-6 pt-4">
+                        <div className="flex items-center justify-between border-b-2 border-orange-500 pb-1">
+                          <h3 className="text-xl font-display font-black text-white uppercase tracking-normal">Offline Stash</h3>
+                          <span className="text-[10px] font-black bg-orange-500 text-black px-2 py-0.5 rounded animate-pulse">HIDDEN DATA</span>
                         </div>
-                      ))}
-                    </div>
-                  </section>
+                        <p className="text-xs font-bold text-[var(--brawl-text-dim)] uppercase leading-relaxed">Input resources held in your account that the API cannot detect (unclaimed boxes, bank, etc).</p>
+
+                        <div className="grid grid-cols-1 gap-4">
+                          {primaryStash.map(key => (
+                            <div key={key} className="relative group">
+                              <div className="chamfer-md p-[2px] bg-white/10 focus-within:bg-orange-500 transition-all shadow-inner">
+                                <div className="chamfer-md bg-black/60 flex items-center p-3 gap-4">
+                                  {/* Placeholder Icon */}
+                                  <div className="w-12 h-12 shrink-0 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+                                    <div className={`w-8 h-8 rounded-full shadow-inner ${
+                                      key === 'coins' ? 'bg-yellow-400' :
+                                      key === 'powerPoints' ? 'bg-pink-500' :
+                                      key === 'gems' ? 'bg-emerald-400' : 'bg-gray-500'
+                                    }`} />
+                                  </div>
+                                  
+                                  <div className="flex-1">
+                                    <label className="text-[10px] font-black text-[var(--brawl-text-dim)] uppercase tracking-widest group-hover:text-white transition-colors block mb-1">
+                                      {key === 'powerPoints' ? 'Power Points' : key}
+                                    </label>
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      placeholder="0"
+                                      value={stash[key] === 0 ? '' : stash[key] || ''}
+                                      onChange={e => handleStashChange(key, e.target.value)}
+                                      className="w-full bg-transparent text-white font-black outline-none text-2xl font-display"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        <button 
+                          onClick={() => setShowUnclaimed(!showUnclaimed)}
+                          className="w-full chamfer-sm py-3 px-4 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-orange-500/50 text-white font-bold text-sm uppercase tracking-wide transition-all flex items-center justify-between"
+                        >
+                          <span>Do you have unclaimed rewards?</span>
+                          <span className="text-orange-500">{showUnclaimed ? '−' : '+'}</span>
+                        </button>
+
+                        {showUnclaimed && (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 animate-fade-in-up">
+                            {secondaryStash.map(key => (
+                              <div key={key} className="space-y-2 group">
+                                <label className="text-[10px] font-black text-[var(--brawl-text-dim)] uppercase tracking-widest group-hover:text-white transition-colors block truncate">{key}</label>
+                                <div className="chamfer-sm p-[1.5px] bg-white/5 focus-within:bg-orange-500 transition-all shadow-inner">
+                                  <div className="chamfer-sm bg-black/60 flex items-center">
+                                    <input
+                                      type="number"
+                                      min="0"
+                                      placeholder="0"
+                                      value={stash[key] === 0 ? '' : stash[key] || ''}
+                                      onChange={e => handleStashChange(key, e.target.value)}
+                                      className="w-full bg-transparent p-2.5 text-white font-black outline-none text-sm"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </section>
+                    );
+                  })()}
+
+                  {activeTab === "presets" && (
+                    <section className="space-y-4 pt-4">
+                      <div className="flex flex-col gap-4">
+                        <button 
+                          onClick={() => handleLoadPreset(DEFAULT_SETTINGS)}
+                          className="flex flex-col items-start p-4 bg-black/40 border border-white/10 rounded-lg hover:border-[var(--brawl-blue)] hover:bg-white/5 transition-all group"
+                        >
+                          <span className="text-lg font-black text-[var(--brawl-blue)] group-hover:text-white uppercase">Default (F2P Active)</span>
+                          <span className="text-xs font-bold text-white/50 uppercase">Plays daily, finishes quests, F2P only</span>
+                        </button>
+
+                        <button 
+                          onClick={() => handleLoadPreset(ACTIVE_LOW_SPENDER_SETTINGS)}
+                          className="flex flex-col items-start p-4 bg-black/40 border border-white/10 rounded-lg hover:border-green-500 hover:bg-white/5 transition-all group"
+                        >
+                          <span className="text-lg font-black text-green-500 group-hover:text-white uppercase">Active Low Spender</span>
+                          <span className="text-xs font-bold text-white/50 uppercase">Plays daily, buys all regular brawl passes, no ranked pass</span>
+                        </button>
+
+                        <button 
+                          onClick={() => handleLoadPreset(ACTIVE_HIGH_SPENDER_SETTINGS)}
+                          className="flex flex-col items-start p-4 bg-black/40 border border-white/10 rounded-lg hover:border-purple-500 hover:bg-white/5 transition-all group"
+                        >
+                          <span className="text-lg font-black text-purple-500 group-hover:text-white uppercase">Active High Spender</span>
+                          <span className="text-xs font-bold text-white/50 uppercase">Plays daily, buys all plus brawl passes, no ranked pass</span>
+                        </button>
+
+                        <button 
+                          onClick={() => handleLoadPreset(WHALE_SETTINGS)}
+                          className="flex flex-col items-start p-4 bg-black/40 border border-white/10 rounded-lg hover:border-yellow-500 hover:bg-white/5 transition-all group"
+                        >
+                          <span className="text-lg font-black text-yellow-500 group-hover:text-white uppercase">Whale</span>
+                          <span className="text-xs font-bold text-white/50 uppercase">Plays daily, buys all passes, spends heavily</span>
+                        </button>
+                      </div>
+                    </section>
+                  )}
                 </div>
 
                 {/* Footer */}

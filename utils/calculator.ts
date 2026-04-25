@@ -2,6 +2,7 @@ import { PlayerStats } from './brawlAPI';
 import gameMetadata from "@/data/gameMetadata.json";
 import brawlerRarities from "@/data/brawlers.json";
 import incomeData from "@/data/incomeSources.json";
+import { CHOICE_DELTAS, DailyActivityKey, EventsKey, EfficiencyKey } from "./constants";
 
 const {
   ppToLevel: PP_TO_LEVEL,
@@ -46,21 +47,43 @@ export interface CalculationResult {
 }
 
 export interface UserSettings {
-  dailyActivityChoice: number;
-  eventsChoice: string;
+  dailyActivityChoice: DailyActivityKey;
+  eventsChoice: EventsKey;
   finishQuests: boolean;
-  monthlySpending: number;
+  nMonthlySpending: number;
   currency: string;
-  moneyEfficiencyChoice: number;
-  gemEfficiencyChoice: number;
+  moneyEfficiencyChoice: EfficiencyKey;
+  gemEfficiencyChoice: EfficiencyKey;
   isRankedPlayer: boolean;
   esportsRewards: boolean;
+  nYearlyBrawlPass_regular: number;
+  nYearlyBrawlPass_plus: number;
+  nYearlyRankedPass_free: number;
+  nYearlyRankedPass_regular: number;
+  nYearlyBrawlPass_free: number;
+  stash: Record<string, number>;
+}
+
+export interface CalculationMods {
+  dailyActivityDelta: number;
+  challengesDelta: number;
+  eventsDelta: number;
+  bscChallengeDelta: number;
+  brawlPassDelta: number;
+  brawlPassTailDelta: number;
+  rankedPassDelta: number;
+  rankedPassTailDelta: number;
+  moneyEfficiency: number;
+  gemEfficiency: number;
+  isRankedPlayer: number;
+  esportsRewards: number;
+  finishQuests: number;
   nBrawlPass_regular: number;
   nBrawlPass_plus: number;
-  nRankedPass_free: number;
-  nRankedPass_regular: number;
   nBrawlPass_free: number;
-  stash: Record<string, number>;
+  nRankedPass_regular: number;
+  nRankedPass_free: number;
+  [key: string]: number;
 }
 
 export interface IncomeSource {
@@ -191,24 +214,31 @@ export function calculateDaysToMax(
   };
 }
 
-export function computeSettingDeltas(player: PlayerStats, settings: UserSettings): Record<string, number> {
-  const { 
-    dailyActivityChoice, eventsChoice, finishQuests, 
-    nBrawlPass_regular, nBrawlPass_plus, nBrawlPass_free,
-    nRankedPass_regular, nRankedPass_free,
-    monthlySpending, moneyEfficiencyChoice, gemEfficiencyChoice,
-    isRankedPlayer, esportsRewards
+export function computeSettingDeltas(player: PlayerStats, settings: UserSettings): CalculationMods {
+  const {
+    dailyActivityChoice = "daily",
+    eventsChoice = "always",
+    finishQuests = true,
+    nYearlyBrawlPass_regular = 0,
+    nYearlyBrawlPass_plus = 0,
+    nYearlyBrawlPass_free = 12,
+    nYearlyRankedPass_regular = 0,
+    nYearlyRankedPass_free = 4,
+    nMonthlySpending = 0,
+    moneyEfficiencyChoice = "max_efficiency",
+    gemEfficiencyChoice = "max_efficiency",
+    isRankedPlayer = true,
+    esportsRewards = false
   } = settings;
 
-  const dailyActivityDelta = dailyActivityChoice;
-  
-  let challengesDelta = 1;
-  let eventsDelta = 1;
-  if (eventsChoice === 'always') { challengesDelta = 1; eventsDelta = 1; }
-  else if (eventsChoice === 'challenges') { challengesDelta = 1; eventsDelta = 0.7; }
-  else if (eventsChoice === 'events') { challengesDelta = 0.7; eventsDelta = 1; }
-  else if (eventsChoice === 'sometimes') { challengesDelta = 0.6; eventsDelta = 0.6; }
-  else if (eventsChoice === 'rarely') { challengesDelta = 0.4; eventsDelta = 0.4; }
+  // Handle old numeric data if it exists in dailyActivityChoice
+  const dailyActivityDelta = typeof dailyActivityChoice === 'number'
+    ? dailyActivityChoice
+    : (CHOICE_DELTAS.dailyActivity[dailyActivityChoice] ?? 1);
+
+  const eventDeltas = CHOICE_DELTAS.events[eventsChoice] ?? CHOICE_DELTAS.events.always;
+  let challengesDelta = eventDeltas.challenges;
+  let eventsDelta = eventDeltas.events;
 
   const maxbscWins = player.maxbscWins ?? 15;
   const bscChallengeDelta = challengesDelta * (maxbscWins / 15);
@@ -217,31 +247,42 @@ export function computeSettingDeltas(player: PlayerStats, settings: UserSettings
   eventsDelta *= dailyActivityDelta;
 
   const brawlPassDelta = finishQuests ? 1 : (dailyActivityDelta > 0.5 ? 1 : 0.8);
-  
-  let brawlPassTailDelta = finishQuests ? (1 * dailyActivityDelta) : (0.7 * dailyActivityDelta);
-  brawlPassTailDelta += (nBrawlPass_regular * 12 * 0.05) + (nBrawlPass_plus * 12 * 0.1);
 
-  const moneyEfficiency = moneyEfficiencyChoice * (50 / (50 + monthlySpending));
-  const gemEfficiency = gemEfficiencyChoice;
+  let brawlPassTailDelta = finishQuests ? (1 * dailyActivityDelta) : (0.7 * dailyActivityDelta);
+  brawlPassTailDelta += (nYearlyBrawlPass_regular * 0.05) + (nYearlyBrawlPass_plus * 0.1);
+
+  const moneyEfficiencyMult = typeof moneyEfficiencyChoice === 'number'
+    ? moneyEfficiencyChoice
+    : (CHOICE_DELTAS.efficiency[moneyEfficiencyChoice] ?? 1);
+  const moneyEfficiency = moneyEfficiencyMult * (50 / (50 + nMonthlySpending));
+
+  const gemEfficiency = typeof gemEfficiencyChoice === 'number'
+    ? gemEfficiencyChoice
+    : (CHOICE_DELTAS.efficiency[gemEfficiencyChoice] ?? 1);
 
   let rankedPassDelta = 1;
   let rankedPassTailDelta = 1;
-  
-  // Convert API rank (1-19) to our 1-7 scale if it exists, otherwise default to Diamond (4)
-  const apiRank = player.highestRank ?? 10; // Default to Diamond 1
-  const peakRank = apiRank === 19 ? 7 : Math.min(7, Math.floor((apiRank - 1) / 3) + 1);
 
+  // Bronze 1-3, Silver 4-6, Gold 7-9, Diamond 10-12, Mythic 13-15, Legendary 16-17, Master 18-20, Pro 21.
+  const nDivisionsPerRank = 3;
+  const nRanks = 7;
+  const maxRank = nRanks * nDivisionsPerRank + 1;
+
+  const peakRank = player.highestRank ?? 0;
+
+  // ranked gives xp from wins and rankups. active players get base delta for wins, plus/minus variance depending on peak rank
+  // yes -> rankedPassDelta = 0.8 +- 0.2 (scale from bronze to mythic)
+  // yes -> rankedPassTailDelta = 0.7 +- 0.3 (scale from bronze to legendary)
+  // no -> rankedPassTailDelta = rankedPassDelta = 0 
   if (isRankedPlayer) {
-    const normalizedRank = (Math.min(peakRank, 5) - 1) / 4;
-    rankedPassDelta = 0.6 + (0.4 * normalizedRank);
-    
-    const normalizedRankTail = (Math.min(peakRank, 6) - 1) / 5;
-    rankedPassTailDelta = 0.4 + (0.6 * normalizedRankTail);
+    const normalizedRank = (Math.min(peakRank, 5 * nDivisionsPerRank)) / (5 * nDivisionsPerRank);
+    rankedPassDelta = 0.6 + (0.4 * normalizedRank); // 0.8 +- 0.2
+
+    const normalizedRankTail = (Math.min(peakRank, 6 * nDivisionsPerRank)) / (6 * nDivisionsPerRank);
+    rankedPassTailDelta = 0.4 + (0.6 * normalizedRankTail); // 0.7 +- 0.3
   } else {
-    const normalizedRank = (peakRank - 1) / 6;
-    rankedPassDelta = 0.0 + (1.0 * normalizedRank);
-    
-    rankedPassTailDelta = Math.max(0, -0.2 + (1.2 * normalizedRank));
+    rankedPassDelta = 0;
+    rankedPassTailDelta = 0;
   }
 
   return {
@@ -258,11 +299,11 @@ export function computeSettingDeltas(player: PlayerStats, settings: UserSettings
     isRankedPlayer: isRankedPlayer ? 1 : 0,
     esportsRewards: esportsRewards ? 1 : 0,
     finishQuests: finishQuests ? 1 : 0,
-    nBrawlPass_regular,
-    nBrawlPass_plus,
-    nBrawlPass_free,
-    nRankedPass_regular,
-    nRankedPass_free
+    nBrawlPass_regular: nYearlyBrawlPass_regular / 12,
+    nBrawlPass_plus: nYearlyBrawlPass_plus / 12,
+    nBrawlPass_free: nYearlyBrawlPass_free / 12,
+    nRankedPass_regular: nYearlyRankedPass_regular / 4,
+    nRankedPass_free: nYearlyRankedPass_free / 4
   };
 }
 
@@ -298,13 +339,13 @@ function calculateDailyResources(player: PlayerStats, settings?: UserSettings): 
   }
 
   // Handle Monthly Spending
-  if (settings.monthlySpending > 0) {
+  if (settings.nMonthlySpending > 0) {
     let currencyMultiplier = 1;
     if (settings.currency === "EUR") currencyMultiplier = 1.05;
     if (settings.currency === "GBP") currencyMultiplier = 1.25;
     if (settings.currency === "BRL") currencyMultiplier = 0.20;
 
-    const effectiveUsd = settings.monthlySpending * currencyMultiplier;
+    const effectiveUsd = settings.nMonthlySpending * currencyMultiplier;
     // Base value: $1 = 1200 coins equivalent (distributed between coins, PP, credits)
     // Scaled by the efficiency (which includes diminishing returns)
     const dailySpendCoins = (effectiveUsd * 800 * computedModifiers.moneyEfficiency) / 30.416;
@@ -318,11 +359,15 @@ function calculateDailyResources(player: PlayerStats, settings?: UserSettings): 
 
   // Handle Gem Efficiency (convert gems income to progress)
   // If gemEfficiency is 1.0, they spend all gems on progress. If 0.2, they spend 20% on progress, 80% on skins.
-  const progressGems = daily.gems * settings.gemEfficiencyChoice;
-  // 1 Gem ~= 20 Coins equivalent
+  const gemEffMult = typeof settings.gemEfficiencyChoice === 'number'
+    ? settings.gemEfficiencyChoice
+    : (CHOICE_DELTAS.efficiency[settings.gemEfficiencyChoice] ?? 1);
+    
+  const progressGems = daily.gems * gemEffMult;
+  // 1 Gem ~= 15-20 Coins equivalent depending on efficiency
   daily.coins += progressGems * 15;
   daily.powerPoints += progressGems * 5;
-  
+
   // We subtract the gems that were spent on progress (if they want to see "net gems" they can, but usually gems are spent)
   daily.gems -= progressGems;
 
@@ -340,8 +385,10 @@ function getModification(
 
   for (const key in incomeSource.modifiers) {
     const sourceValue = incomeSource.modifiers[key] ?? 1;
-    const userValue = computedModifiers[key] ?? 1;
-    // should never have empty numbers file modifier, and neither userSettings deltas, so if it is, probably a mistake and we can multiply by 1 so nothing changes
+    let userValue = computedModifiers[key] ?? 1;
+    
+    // Safety check for NaN or undefined in computed modifiers
+    if (isNaN(userValue)) userValue = 1;
 
     result *= (sourceValue * userValue);
   }
