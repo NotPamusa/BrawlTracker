@@ -4,7 +4,8 @@ import { createClient } from "@/utils/supabase/server";
 import { getPlayer } from "@/utils/brawlAPI";
 import { redirect } from "next/navigation";
 
-const ICON_LIST = Array.from({ length: 29 }, (_, i) => 28000000 + i); // 28000000 to 28000028 (29 icons)
+//const ICON_LIST = Array.from({ length: 29 }, (_, i) => 28000000 + i); // 28000000 to 28000028 (29 icons)
+const ICON_LIST = [28000000, 28000001, 28000002, 28000003, 28000020, 28000021, 28000022, 28000023, 28000024, 28000025, 28000026, 28000027, 28000030, 28000031, 28000032, 28000033];
 
 export async function startVerification(tag: string) {
   const supabase = await createClient();
@@ -40,7 +41,7 @@ export async function startVerification(tag: string) {
   }
 
   // 2. Verification threshold check
-  if (player.trophies < 8000) {
+  if (player.trophies < 13000) {
     // Auto-verify
     await supabase.from('profiles').upsert({
       id: user.id,
@@ -55,7 +56,7 @@ export async function startVerification(tag: string) {
   // 3. Generate random icon for verification
   let randomIcon;
   const currentIcon = player.icon.id;
-  
+
   do {
     const randomIndex = Math.floor(Math.random() * ICON_LIST.length);
     randomIcon = ICON_LIST[randomIndex];
@@ -139,4 +140,73 @@ export async function getProfile() {
     .maybeSingle();
 
   return data;
+}
+
+export async function fetchPlayer(tag: string) {
+  return await getPlayer(tag);
+}
+
+export async function toggleTracked(tag: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Must be logged in to track accounts");
+
+  const cleanTag = tag.replace('#', '').toUpperCase();
+
+  // Check if already tracked
+  const { data: existing } = await supabase
+    .from('tracked_accounts')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('player_tag', cleanTag)
+    .maybeSingle();
+
+  if (existing) {
+    // Untrack
+    await supabase.from('tracked_accounts').delete().eq('id', existing.id);
+    return { status: 'untracked' };
+  } else {
+    // Check limit
+    const { count } = await supabase
+      .from('tracked_accounts')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id);
+
+    if (count && count >= 5) {
+      throw new Error("You can only track up to 5 accounts.");
+    }
+
+    // Track
+    await supabase.from('tracked_accounts').insert({ user_id: user.id, player_tag: cleanTag });
+    return { status: 'tracked' };
+  }
+}
+
+export async function isTracked(tag: string) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+
+  const { data } = await supabase
+    .from('tracked_accounts')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('player_tag', tag.replace('#', '').toUpperCase())
+    .maybeSingle();
+
+  return !!data;
+}
+
+export async function getTrackedAccounts() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  const { data } = await supabase
+    .from('tracked_accounts')
+    .select('player_tag')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
+  return data?.map(d => d.player_tag) || [];
 }

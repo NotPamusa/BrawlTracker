@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import Link from "next/link";
-import { getPlayer } from "@/utils/brawlAPI";
+import { fetchPlayer } from "@/app/actions";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -33,7 +33,7 @@ export default function ProfilePage() {
           .maybeSingle();
 
         if (profile?.player_tag && profile.is_verified) {
-          const player = await getPlayer(profile.player_tag);
+          const player = await fetchPlayer(profile.player_tag);
           if (player) {
             setLinkedAccount({
               name: player.name,

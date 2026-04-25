@@ -3,6 +3,7 @@ import { saveDailySnapshot } from "@/utils/snapshot";
 import PlayerProgressionDashboard from "@/components/PlayerProgressionDashboard";
 import { createClient } from "@/utils/supabase/server";
 import Link from "next/link";
+import TrackButton from "@/components/TrackButton";
 
 interface PlayerPageProps {
   params: Promise<{ tag: string }>;
@@ -84,6 +85,11 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
             🏆 {num(player.trophies)} Trophies
             {player.club?.name && <span className="ml-2 px-2 py-0.5 bg-yellow-500/20 text-yellow-300 rounded text-xs border border-yellow-500/30 font-bold">{player.club.name}</span>}
           </p>
+          {user && !isOwnAccount && (
+            <div className="mt-3">
+              <TrackButton tag={tag} />
+            </div>
+          )}
         </div>
 
         {showLinkCta && (

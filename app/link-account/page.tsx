@@ -10,7 +10,7 @@ function LinkAccountContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialTag = searchParams.get("tag") || "";
-  
+
   const [tag, setTag] = useState(initialTag);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'pending' | 'verified' | 'error'>('idle');
@@ -110,7 +110,7 @@ function LinkAccountContent() {
 
         <div className="bg-[var(--brawl-border)] chamfer-md p-[2px] shadow-lg">
           <div className="p-8 chamfer-md bg-[var(--brawl-bg-card)]">
-            
+
             {status === 'idle' && (
               <div className="space-y-6">
                 <div className="flex flex-col gap-2">
@@ -130,7 +130,7 @@ function LinkAccountContent() {
                         />
                       </div>
                     </div>
-                    <button 
+                    <button
                       onClick={handleStart}
                       disabled={loading || !tag}
                       className="chamfer-btn-primary chamfer-sm disabled:opacity-50 shrink-0"
@@ -153,19 +153,15 @@ function LinkAccountContent() {
                   <p className="text-lg font-bold text-white mb-6">
                     Set this as your profile icon in Brawl Stars:
                   </p>
-                  
+
                   <div className="flex justify-center mb-6">
-                    <div className="w-24 h-24 p-1 bg-[var(--brawl-cyan)] chamfer-sm">
-                      <div className="w-full h-full bg-black chamfer-sm overflow-hidden relative">
-                        <Image 
-                          src={`/profile_pictures/pfp_${verificationIcon}.png`}
-                          alt="Verification Icon"
-                          width={96}
-                          height={96}
-                          className="object-cover"
-                        />
-                      </div>
-                    </div>
+                    <Image
+                      src={`/profile_pictures/pfp_${verificationIcon}.png`}
+                      alt="Verification Icon"
+                      width={96}
+                      height={96}
+                      className="object-cover"
+                    />
                   </div>
 
                   <p className="text-xs text-[var(--brawl-cyan)] font-bold uppercase tracking-widest mb-2">
@@ -173,7 +169,7 @@ function LinkAccountContent() {
                   </p>
                 </div>
 
-                <button 
+                <button
                   onClick={handleCheck}
                   disabled={loading}
                   className="chamfer-btn-primary chamfer-sm w-full"

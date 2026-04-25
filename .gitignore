@@ -25,6 +25,7 @@
 *.pem
 AGENTS.md
 CLAUDE.md
+/personal
 
 # debug
 npm-debug.log*

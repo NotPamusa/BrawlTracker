@@ -19,15 +19,40 @@ export default function HeroSection() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
+      if (user) {
+        // Fetch real profile data to check linked status
+        supabase
+          .from('profiles')
+          .select('is_verified')
+          .eq('id', user.id)
+          .maybeSingle()
+          .then(({ data: profile }) => {
+            if (profile?.is_verified) {
+              setLinkedAccount(true);
+            }
+          });
+      }
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        supabase
+          .from('profiles')
+          .select('is_verified')
+          .eq('id', session.user.id)
+          .maybeSingle()
+          .then(({ data: profile }) => {
+            setLinkedAccount(profile?.is_verified || false);
+          });
+      } else {
+        setLinkedAccount(null);
+      }
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase.auth]);
+  }, [supabase]);
 
   return (
     <section className="flex flex-col items-center pt-24 sm:pt-32 pb-16 px-4 sm:px-6">
@@ -39,7 +64,7 @@ export default function HeroSection() {
       </div>
 
       {/* Tag input — chamfered teal glow bar */}
-      <div className="w-full max-w-2xl mt-10 animate-fade-in-up-delay-1">
+      <div className="w-full max-w-2xl mt-10 animate-fade-in-up-delay-1 relative z-50">
         <TagInput variant="hero" />
       </div>
 

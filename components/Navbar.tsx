@@ -3,10 +3,10 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
+import TagInput from "./TagInput";
 
 export default function Navbar() {
   const router = useRouter();
-  const [tag, setTag] = useState("");
   const [user, setUser] = useState<any>(null);
   const supabase = createClient();
 
@@ -24,27 +24,6 @@ export default function Navbar() {
     return () => subscription.unsubscribe();
   }, [supabase.auth]);
 
-  function handleTagChange(e: React.ChangeEvent<HTMLInputElement>) {
-    let val = e.target.value.toUpperCase().replace(/\s/g, "");
-    if (val === "") {
-      setTag("");
-      return;
-    }
-    if (!val.startsWith("#")) {
-      val = "#" + val;
-    }
-    val = "#" + val.slice(1).replace(/#/g, "");
-    setTag(val);
-  }
-
-  function handleSearch(e: React.FormEvent) {
-    e.preventDefault();
-    const cleaned = tag.replace("#", "").trim().toUpperCase();
-    if (cleaned.length > 0) {
-      router.push(`/player/${cleaned}`);
-    }
-  }
-
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 inset-panel">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
@@ -60,25 +39,9 @@ export default function Navbar() {
         </button>
 
         <div className="flex items-center gap-4 ml-auto">
-          {/* Ghost search input — chamfered */}
-          <form
-            onSubmit={handleSearch}
-            className="w-full max-w-sm hidden sm:flex items-center"
-            id="nav-search-form"
-          >
-            <div className="chamfer-input-wrap chamfer-xs w-full">
-              <div className="chamfer-input-bg chamfer-xs flex items-center">
-                <input
-                  type="text"
-                  value={tag}
-                  onChange={handleTagChange}
-                  placeholder="Search player tag #..."
-                  className="chamfer-input-core py-2 pl-3 pr-3 text-sm font-semibold"
-                  id="nav-tag-input"
-                />
-              </div>
-            </div>
-          </form>
+          <div className="w-full max-w-sm hidden sm:flex items-center">
+            <TagInput variant="compact" />
+          </div>
 
           {/* User Auth Section */}
           {user ? (
