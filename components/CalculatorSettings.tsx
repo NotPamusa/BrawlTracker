@@ -151,19 +151,19 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
 
                 {/* Tabs Header */}
                 <div className="flex border-b-2 border-white/10 bg-black/40 text-sm font-black uppercase tracking-wider text-white/50 relative z-10 shrink-0">
-                  <button 
+                  <button
                     onClick={() => setActiveTab("general")}
                     className={`flex-1 py-3 transition-colors ${activeTab === "general" ? "bg-[var(--brawl-blue)] text-white shadow-[inset_0_-3px_0_rgba(255,255,255,0.3)]" : "hover:bg-white/10 hover:text-white"}`}
                   >
                     General
                   </button>
-                  <button 
+                  <button
                     onClick={() => setActiveTab("stash")}
                     className={`flex-1 py-3 transition-colors border-l border-white/5 ${activeTab === "stash" ? "bg-orange-600 text-white shadow-[inset_0_-3px_0_rgba(255,255,255,0.3)]" : "hover:bg-white/10 hover:text-white"}`}
                   >
                     Stash
                   </button>
-                  <button 
+                  <button
                     onClick={() => setActiveTab("presets")}
                     className={`flex-1 py-3 transition-colors border-l border-white/5 ${activeTab === "presets" ? "bg-purple-600 text-white shadow-[inset_0_-3px_0_rgba(255,255,255,0.3)]" : "hover:bg-white/10 hover:text-white"}`}
                   >
@@ -173,217 +173,217 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
 
                 {/* Scrollable Content */}
                 <div className="p-6 pb-12 space-y-10 overflow-y-auto custom-scrollbar flex-1">
-                  
+
                   {activeTab === "general" && (
                     <>
                       {/* Play Rate Section */}
-                  <section className="space-y-6">
-                    <h3 className="text-xl font-display font-black text-white border-b-2 border-[var(--brawl-blue)] pb-1 inline-block uppercase tracking-normal">Activity Profile</h3>
+                      <section className="space-y-6">
+                        <h3 className="text-xl font-display font-black text-white border-b-2 border-[var(--brawl-blue)] pb-1 inline-block uppercase tracking-normal">Activity Profile</h3>
 
-                    <div className="space-y-2">
-                      <label className="text-sm font-black text-white uppercase tracking-wide block">How often do you play?</label>
-                      <div className="chamfer-sm p-[1.5px] bg-white/10 focus-within:bg-[var(--brawl-cyan)] transition-colors">
-                        <div className="chamfer-sm bg-black/60">
-                          <select
-                            value={dailyActivityChoice}
-                            onChange={e => setDailyActivityChoice(e.target.value as any)}
-                            className="w-full bg-transparent p-3 text-white font-bold outline-none appearance-none"
-                            style={{ backgroundImage: 'none' }}
-                          >
-                            <option value="hardcore">1+ hours every day</option>
-                            <option value="daily">6+ wins almost every day</option>
-                            <option value="active">5-6 days a week</option>
-                            <option value="regular">4 days a week</option>
-                            <option value="casual">Only weekends and days off</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-black text-white uppercase tracking-wide block">Do you complete challenges and recurring events?</label>
-                      <div className="chamfer-sm p-[1.5px] bg-white/10 focus-within:bg-[var(--brawl-cyan)] transition-colors">
-                        <div className="chamfer-sm bg-black/60">
-                          <select
-                            value={eventsChoice}
-                            onChange={e => setEventsChoice(e.target.value as any)}
-                            className="w-full bg-transparent p-3 text-white font-bold outline-none appearance-none"
-                            style={{ backgroundImage: 'none' }}
-                          >
-                            <option value="always">Almost always</option>
-                            <option value="challenges">Primarily challenges</option>
-                            <option value="events">Primarily events</option>
-                            <option value="sometimes">Sometimes</option>
-                            <option value="rarely">Rarely</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-
-                    <label className="flex items-center gap-4 cursor-pointer group bg-black/20 p-4 rounded-lg border border-white/5 hover:border-white/20 transition-all">
-                      <div className="relative flex items-center justify-center w-8 h-8 border-2 border-white/20 rounded-md bg-black/40 group-hover:border-[var(--brawl-cyan)] transition-colors">
-                        <input
-                          type="checkbox"
-                          checked={finishQuests}
-                          onChange={e => setFinishQuests(e.target.checked)}
-                          className="peer sr-only"
-                        />
-                        <svg className="w-6 h-6 text-[var(--brawl-cyan)] opacity-0 peer-checked:opacity-100 transition-all scale-50 peer-checked:scale-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                      </div>
-                      <span className="text-sm font-black text-white uppercase tracking-normal">Finish all quests at season end?</span>
-                    </label>
-                  </section>
-
-                  {/* Money Section */}
-                  <section className="space-y-8">
-                    <h3 className="text-xl font-display font-black text-white border-b-2 border-[var(--brawl-yellow)] pb-1 inline-block uppercase tracking-normal">Passes & Spending</h3>
-
-                    <div className="space-y-4">
-                      <label className="text-sm font-black text-white uppercase tracking-wide block">How many Brawl Passes do you buy yearly?</label>
-                      <BrawlPassSlider bpMonths={nBrawlPass_regular} setBpMonths={setNBrawlPass_regular} bppMonths={nBrawlPass_plus} setBppMonths={setNBrawlPass_plus} />
-                      <div className="grid grid-cols-3 gap-3 text-center">
-                        <div className="bg-yellow-500/10 p-2 rounded border border-yellow-500/20">
-                          <span className="text-[10px] font-black text-yellow-500 block uppercase mb-1">Regular BP</span>
-                          <span className="text-xl font-display font-black text-white leading-none">{nBrawlPass_regular}</span>
-                        </div>
-                        <div className="bg-orange-500/10 p-2 rounded border border-orange-500/20">
-                          <span className="text-[10px] font-black text-orange-400 block uppercase mb-1">Free Pass</span>
-                          <span className="text-xl font-display font-black text-white leading-none">{12 - nBrawlPass_regular - nBrawlPass_plus}</span>
-                        </div>
-                        <div className="bg-gray-400/10 p-2 rounded border border-gray-400/20">
-                          <span className="text-[10px] font-black text-gray-400 block uppercase mb-1">BP Plus</span>
-                          <span className="text-xl font-display font-black text-white leading-none">{nBrawlPass_plus}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-6 pt-6 border-t border-white/5">
-                      <div className="flex-1 space-y-3">
-                        <label className="text-sm font-black text-white uppercase tracking-wide block">How many Ranked Passes do you buy yearly?</label>
-                        <RankedPassSlider freeMonths={nRankedPass_free} setFreeMonths={setNRankedPass_free} regMonths={nRankedPass_regular} setRegMonths={setNRankedPass_regular} />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 min-w-[120px]">
-                        <div className="bg-purple-500/10 p-2 rounded border border-purple-500/20 flex flex-col items-center justify-center">
-                          <span className="text-[10px] font-black text-purple-400 uppercase mb-1 leading-none text-center">REGULAR</span>
-                          <span className="text-xl font-display font-black text-white leading-none">{nRankedPass_regular}</span>
-                        </div>
-                        <div className="bg-gray-500/10 p-2 rounded border border-gray-500/20 flex flex-col items-center justify-center">
-                          <span className="text-[10px] font-black text-gray-400 uppercase mb-1 leading-none text-center">FREE</span>
-                          <span className="text-xl font-display font-black text-white leading-none">{nRankedPass_free}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="text-sm font-black text-white uppercase tracking-wide block">Monthly spend outside passes</label>
-                      <div className="flex gap-2">
-                        <div className="chamfer-sm p-[1.5px] bg-white/10 focus-within:bg-[var(--brawl-cyan)] transition-colors">
-                          <div className="chamfer-sm bg-black/60">
-                            <select
-                              value={currency}
-                              onChange={e => setCurrency(e.target.value)}
-                              className="bg-transparent p-3 text-white font-black outline-none appearance-none min-w-[70px] text-center"
-                              style={{ backgroundImage: 'none' }}
-                            >
-                              <option value="USD">$</option>
-                              <option value="EUR">€</option>
-                              <option value="GBP">£</option>
-                              <option value="BRL">R$</option>
-                            </select>
+                        <div className="space-y-2">
+                          <label className="text-sm font-black text-white uppercase tracking-wide block">How often do you play?</label>
+                          <div className="chamfer-sm p-[1.5px] bg-white/10 focus-within:bg-[var(--brawl-cyan)] transition-colors">
+                            <div className="chamfer-sm bg-black/60">
+                              <select
+                                value={dailyActivityChoice}
+                                onChange={e => setDailyActivityChoice(e.target.value as any)}
+                                className="w-full bg-transparent p-3 text-white font-bold outline-none appearance-none"
+                                style={{ backgroundImage: 'none' }}
+                              >
+                                <option value="hardcore">1+ hours every day</option>
+                                <option value="daily">6+ wins almost every day</option>
+                                <option value="active">5-6 days a week</option>
+                                <option value="regular">4 days a week</option>
+                                <option value="casual">Only weekends and days off</option>
+                              </select>
+                            </div>
                           </div>
                         </div>
-                        <div className="relative flex-1 chamfer-sm p-[1.5px] bg-white/10 focus-within:bg-[var(--brawl-cyan)] transition-colors">
-                          <div className="chamfer-sm bg-black/60">
+
+                        <div className="space-y-2">
+                          <label className="text-sm font-black text-white uppercase tracking-wide block">Do you complete challenges and recurring events?</label>
+                          <div className="chamfer-sm p-[1.5px] bg-white/10 focus-within:bg-[var(--brawl-cyan)] transition-colors">
+                            <div className="chamfer-sm bg-black/60">
+                              <select
+                                value={eventsChoice}
+                                onChange={e => setEventsChoice(e.target.value as any)}
+                                className="w-full bg-transparent p-3 text-white font-bold outline-none appearance-none"
+                                style={{ backgroundImage: 'none' }}
+                              >
+                                <option value="always">Almost always</option>
+                                <option value="challenges">Primarily challenges</option>
+                                <option value="events">Primarily events</option>
+                                <option value="sometimes">Sometimes</option>
+                                <option value="rarely">Rarely</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div>
+
+                        <label className="flex items-center gap-4 cursor-pointer group bg-black/20 p-4 rounded-lg border border-white/5 hover:border-white/20 transition-all">
+                          <div className="relative flex items-center justify-center w-8 h-8 border-2 border-white/20 rounded-md bg-black/40 group-hover:border-[var(--brawl-cyan)] transition-colors">
                             <input
-                              type="number"
-                              min="0"
-                              placeholder="0.00"
-                              value={monthlySpending}
-                              onChange={e => setMonthlySpending(e.target.value)}
-                              className="w-full bg-transparent p-3 text-white font-black outline-none"
+                              type="checkbox"
+                              checked={finishQuests}
+                              onChange={e => setFinishQuests(e.target.checked)}
+                              className="peer sr-only"
                             />
+                            <svg className="w-6 h-6 text-[var(--brawl-cyan)] opacity-0 peer-checked:opacity-100 transition-all scale-50 peer-checked:scale-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                          </div>
+                          <span className="text-sm font-black text-white uppercase tracking-normal">Finish all quests at season end?</span>
+                        </label>
+                      </section>
+
+                      {/* Money Section */}
+                      <section className="space-y-8">
+                        <h3 className="text-xl font-display font-black text-white border-b-2 border-[var(--brawl-yellow)] pb-1 inline-block uppercase tracking-normal">Passes & Spending</h3>
+
+                        <div className="space-y-4">
+                          <label className="text-sm font-black text-white uppercase tracking-wide block">How many Brawl Passes do you buy every year?</label>
+                          <BrawlPassSlider bpMonths={nBrawlPass_regular} setBpMonths={setNBrawlPass_regular} bppMonths={nBrawlPass_plus} setBppMonths={setNBrawlPass_plus} />
+                          <div className="grid grid-cols-3 gap-3 text-center">
+                            <div className="bg-yellow-500/10 p-2 rounded border border-yellow-500/20">
+                              <span className="text-[10px] font-black text-yellow-500 block uppercase mb-1">Regular BP</span>
+                              <span className="text-xl font-display font-black text-white leading-none">{nBrawlPass_regular}</span>
+                            </div>
+                            <div className="bg-orange-500/10 p-2 rounded border border-orange-500/20">
+                              <span className="text-[10px] font-black text-orange-400 block uppercase mb-1">Free Pass</span>
+                              <span className="text-xl font-display font-black text-white leading-none">{12 - nBrawlPass_regular - nBrawlPass_plus}</span>
+                            </div>
+                            <div className="bg-gray-400/10 p-2 rounded border border-gray-400/20">
+                              <span className="text-[10px] font-black text-gray-400 block uppercase mb-1">BP Plus</span>
+                              <span className="text-xl font-display font-black text-white leading-none">{nBrawlPass_plus}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </div>
 
-                    <div className="space-y-2">
-                      <label className="text-sm font-black text-white uppercase tracking-wide block">
-                        {Number(monthlySpending) > 0 ? "How do you spend your money outside battle passes?" : "If you were to spend money outside passes, what would you buy?"}
-                      </label>
-                      <div className="chamfer-sm p-[1.5px] bg-white/10 focus-within:bg-[var(--brawl-cyan)] transition-colors">
-                        <div className="chamfer-sm bg-black/60">
-                          <select
-                            value={moneyEfficiencyChoice}
-                            onChange={e => setMoneyEfficiencyChoice(e.target.value as any)}
-                            className="w-full bg-transparent p-3 text-white font-bold outline-none appearance-none"
-                            style={{ backgroundImage: 'none' }}
-                          >
-                            <option value="max_efficiency">Only highest efficiency resource offers (gems &gt;30% off, coins/pwp 80+% off)</option>
-                            <option value="high_efficiency">High efficiency offers for resources</option>
-                            <option value="mixed">High efficiency offers for resources and skins</option>
-                            <option value="skins">Mostly skins</option>
-                          </select>
+                        <div className="flex items-center gap-6 pt-6 border-t border-white/5">
+                          <div className="flex-1 space-y-3">
+                            <label className="text-sm font-black text-white uppercase tracking-wide block">How many Ranked Passes do you buy every year?</label>
+                            <RankedPassSlider freeMonths={nRankedPass_free} setFreeMonths={setNRankedPass_free} regMonths={nRankedPass_regular} setRegMonths={setNRankedPass_regular} />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 min-w-[120px]">
+                            <div className="bg-purple-500/10 p-2 rounded border border-purple-500/20 flex flex-col items-center justify-center">
+                              <span className="text-[10px] font-black text-purple-400 uppercase mb-1 leading-none text-center">REGULAR</span>
+                              <span className="text-xl font-display font-black text-white leading-none">{nRankedPass_regular}</span>
+                            </div>
+                            <div className="bg-gray-500/10 p-2 rounded border border-gray-500/20 flex flex-col items-center justify-center">
+                              <span className="text-[10px] font-black text-gray-400 uppercase mb-1 leading-none text-center">FREE</span>
+                              <span className="text-xl font-display font-black text-white leading-none">{nRankedPass_free}</span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
 
-                    <div className="space-y-2">
-                      <label className="text-sm font-black text-white uppercase tracking-wide block">How do you spend your gems?</label>
-                      <div className="chamfer-sm p-[1.5px] bg-white/10 focus-within:bg-[var(--brawl-cyan)] transition-colors">
-                        <div className="chamfer-sm bg-black/60">
-                          <select
-                            value={gemEfficiencyChoice}
-                            onChange={e => setGemEfficiencyChoice(e.target.value as any)}
-                            className="w-full bg-transparent p-3 text-white font-bold outline-none appearance-none"
-                            style={{ backgroundImage: 'none' }}
-                          >
-                            <option value="max_efficiency">Only highest efficiency offers (like hypercharge for 79 gems)</option>
-                            <option value="high_efficiency">High efficiency offers for resources</option>
-                            <option value="mixed">High efficiency offers for resources and skins</option>
-                            <option value="skins">Mostly skins</option>
-                          </select>
+                        <div className="space-y-2">
+                          <label className="text-sm font-black text-white uppercase tracking-wide block">Monthly spend outside passes</label>
+                          <div className="flex gap-2">
+                            <div className="chamfer-sm p-[1.5px] bg-white/10 focus-within:bg-[var(--brawl-cyan)] transition-colors">
+                              <div className="chamfer-sm bg-black/60">
+                                <select
+                                  value={currency}
+                                  onChange={e => setCurrency(e.target.value)}
+                                  className="bg-transparent p-3 text-white font-black outline-none appearance-none min-w-[70px] text-center"
+                                  style={{ backgroundImage: 'none' }}
+                                >
+                                  <option value="USD">$</option>
+                                  <option value="EUR">€</option>
+                                  <option value="GBP">£</option>
+                                  <option value="BRL">R$</option>
+                                </select>
+                              </div>
+                            </div>
+                            <div className="relative flex-1 chamfer-sm p-[1.5px] bg-white/10 focus-within:bg-[var(--brawl-cyan)] transition-colors">
+                              <div className="chamfer-sm bg-black/60">
+                                <input
+                                  type="number"
+                                  min="0"
+                                  placeholder="0.00"
+                                  value={monthlySpending}
+                                  onChange={e => setMonthlySpending(e.target.value)}
+                                  className="w-full bg-transparent p-3 text-white font-black outline-none"
+                                />
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </section>
 
-                  {/* Ranked Section */}
-                  <section className="space-y-6 pt-4 border-t border-white/5">
-                    <h3 className="text-xl font-display font-black text-white border-b-2 border-purple-500 pb-1 inline-block uppercase tracking-normal">Competitive Stats</h3>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
-                      <label className="flex items-center gap-4 cursor-pointer group bg-black/20 p-4 rounded-lg border border-white/5 hover:border-purple-500/50 transition-all h-full">
-                        <div className="relative flex items-center justify-center w-8 h-8 border-2 border-white/20 rounded-md bg-black/40 group-hover:border-purple-400 transition-colors">
-                          <input
-                            type="checkbox"
-                            checked={isRankedPlayer}
-                            onChange={e => setIsRankedPlayer(e.target.checked)}
-                            className="peer sr-only"
-                          />
-                          <svg className="w-6 h-6 text-purple-400 opacity-0 peer-checked:opacity-100 transition-all scale-50 peer-checked:scale-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <div className="space-y-2">
+                          <label className="text-sm font-black text-white uppercase tracking-wide block">
+                            {Number(monthlySpending) > 0 ? "How do you spend your money outside battle passes?" : "If you were to spend money outside passes, what would you buy?"}
+                          </label>
+                          <div className="chamfer-sm p-[1.5px] bg-white/10 focus-within:bg-[var(--brawl-cyan)] transition-colors">
+                            <div className="chamfer-sm bg-black/60">
+                              <select
+                                value={moneyEfficiencyChoice}
+                                onChange={e => setMoneyEfficiencyChoice(e.target.value as any)}
+                                className="w-full bg-transparent p-3 text-white font-bold outline-none appearance-none"
+                                style={{ backgroundImage: 'none' }}
+                              >
+                                <option value="max_efficiency">Only highest efficiency resource offers (gems &gt;30% off, coins/pwp 80+% off)</option>
+                                <option value="high_efficiency">High efficiency offers for resources</option>
+                                <option value="mixed">High efficiency offers for resources and skins</option>
+                                <option value="skins">Mostly skins</option>
+                              </select>
+                            </div>
+                          </div>
                         </div>
-                        <div className="flex flex-col">
-                          <span className="text-sm font-black text-white uppercase tracking-normal leading-tight">Play Ranked?</span>
-                        </div>
-                      </label>
 
-                      <label className="flex items-center gap-4 cursor-pointer group bg-black/20 p-4 rounded-lg border border-white/5 hover:border-yellow-500/50 transition-all h-full max-h-[76px]">
-                        <div className="relative flex items-center justify-center w-8 h-8 border-2 border-white/20 rounded-md bg-black/40 group-hover:border-yellow-400 transition-colors">
-                          <input
-                            type="checkbox"
-                            checked={esportsRewards}
-                            onChange={e => setEsportsRewards(e.target.checked)}
-                            className="peer sr-only"
-                          />
-                          <svg className="w-6 h-6 text-yellow-400 opacity-0 peer-checked:opacity-100 transition-all scale-50 peer-checked:scale-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        <div className="space-y-2">
+                          <label className="text-sm font-black text-white uppercase tracking-wide block">How do you spend your gems?</label>
+                          <div className="chamfer-sm p-[1.5px] bg-white/10 focus-within:bg-[var(--brawl-cyan)] transition-colors">
+                            <div className="chamfer-sm bg-black/60">
+                              <select
+                                value={gemEfficiencyChoice}
+                                onChange={e => setGemEfficiencyChoice(e.target.value as any)}
+                                className="w-full bg-transparent p-3 text-white font-bold outline-none appearance-none"
+                                style={{ backgroundImage: 'none' }}
+                              >
+                                <option value="max_efficiency">Only highest efficiency offers (like hypercharge for 79 gems)</option>
+                                <option value="high_efficiency">High efficiency offers for resources</option>
+                                <option value="mixed">High efficiency offers for resources and skins</option>
+                                <option value="skins">Mostly skins</option>
+                              </select>
+                            </div>
+                          </div>
                         </div>
-                        <span className="text-sm font-black text-white uppercase tracking-normal">Brawl Esports rewards?</span>
-                      </label>
-                    </div>
-                  </section>
+                      </section>
 
-                  {/* End General Tab */}
+                      {/* Ranked Section */}
+                      <section className="space-y-6 pt-4 border-t border-white/5">
+                        <h3 className="text-xl font-display font-black text-white border-b-2 border-purple-500 pb-1 inline-block uppercase tracking-normal">Competitive Settings</h3>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                          <label className="flex items-center gap-4 cursor-pointer group bg-black/20 p-4 rounded-lg border border-white/5 hover:border-purple-500/50 transition-all h-full">
+                            <div className="relative flex items-center justify-center w-8 h-8 border-2 border-white/20 rounded-md bg-black/40 group-hover:border-purple-400 transition-colors">
+                              <input
+                                type="checkbox"
+                                checked={isRankedPlayer}
+                                onChange={e => setIsRankedPlayer(e.target.checked)}
+                                className="peer sr-only"
+                              />
+                              <svg className="w-6 h-6 text-purple-400 opacity-0 peer-checked:opacity-100 transition-all scale-50 peer-checked:scale-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-sm font-black text-white uppercase tracking-normal leading-tight">Play Ranked?</span>
+                            </div>
+                          </label>
+
+                          <label className="flex items-center gap-4 cursor-pointer group bg-black/20 p-4 rounded-lg border border-white/5 hover:border-yellow-500/50 transition-all h-full max-h-[76px]">
+                            <div className="relative flex items-center justify-center w-8 h-8 border-2 border-white/20 rounded-md bg-black/40 group-hover:border-yellow-400 transition-colors">
+                              <input
+                                type="checkbox"
+                                checked={esportsRewards}
+                                onChange={e => setEsportsRewards(e.target.checked)}
+                                className="peer sr-only"
+                              />
+                              <svg className="w-6 h-6 text-yellow-400 opacity-0 peer-checked:opacity-100 transition-all scale-50 peer-checked:scale-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            </div>
+                            <span className="text-sm font-black text-white uppercase tracking-normal">Brawl Esports rewards?</span>
+                          </label>
+                        </div>
+                      </section>
+
+                      {/* End General Tab */}
                     </>
                   )}
 
@@ -394,25 +394,29 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
                     return (
                       <section className="space-y-6 pt-4">
                         <div className="flex items-center justify-between border-b-2 border-orange-500 pb-1">
-                          <h3 className="text-xl font-display font-black text-white uppercase tracking-normal">Offline Stash</h3>
-                          <span className="text-[10px] font-black bg-orange-500 text-black px-2 py-0.5 rounded animate-pulse">HIDDEN DATA</span>
+                          <h3 className="text-xl font-display font-black text-white uppercase tracking-normal">Stash</h3>
+                          <span className="text-[10px] font-black bg-orange-500 text-black px-2 py-0.5 rounded animate-pulse">This data isn't shown by the Brawl API</span>
                         </div>
-                        <p className="text-xs font-bold text-[var(--brawl-text-dim)] uppercase leading-relaxed">Input resources held in your account that the API cannot detect (unclaimed boxes, bank, etc).</p>
 
                         <div className="grid grid-cols-1 gap-4">
                           {primaryStash.map(key => (
                             <div key={key} className="relative group">
                               <div className="chamfer-md p-[2px] bg-white/10 focus-within:bg-orange-500 transition-all shadow-inner">
                                 <div className="chamfer-md bg-black/60 flex items-center p-3 gap-4">
-                                  {/* Placeholder Icon */}
-                                  <div className="w-12 h-12 shrink-0 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
-                                    <div className={`w-8 h-8 rounded-full shadow-inner ${
-                                      key === 'coins' ? 'bg-yellow-400' :
-                                      key === 'powerPoints' ? 'bg-pink-500' :
-                                      key === 'gems' ? 'bg-emerald-400' : 'bg-gray-500'
-                                    }`} />
+                                  {/* Resource Icon */}
+                                  <div className="w-12 h-12 shrink-0 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden p-1">
+                                    <img
+                                      src={
+                                        key === 'coins' ? '/icons/icon_gold_1.png' :
+                                          key === 'powerPoints' ? '/icons/icon_powerpoint_pile.webp' :
+                                            key === 'gems' ? '/icons/icon_gems_pack_0080.png' :
+                                              ''
+                                      }
+                                      alt={key}
+                                      className="w-full h-full object-contain"
+                                    />
                                   </div>
-                                  
+
                                   <div className="flex-1">
                                     <label className="text-[10px] font-black text-[var(--brawl-text-dim)] uppercase tracking-widest group-hover:text-white transition-colors block mb-1">
                                       {key === 'powerPoints' ? 'Power Points' : key}
@@ -432,12 +436,14 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
                           ))}
                         </div>
 
-                        <button 
+                        <button
                           onClick={() => setShowUnclaimed(!showUnclaimed)}
-                          className="w-full chamfer-sm py-3 px-4 bg-white/5 border border-white/10 hover:bg-white/10 hover:border-orange-500/50 text-white font-bold text-sm uppercase tracking-wide transition-all flex items-center justify-between"
+                          className="w-full chamfer-sm p-[1px] bg-white/10 hover:bg-orange-500/50 transition-all text-left group block"
                         >
-                          <span>Do you have unclaimed rewards?</span>
-                          <span className="text-orange-500">{showUnclaimed ? '−' : '+'}</span>
+                          <div className="chamfer-sm py-3 px-4 bg-[#111111] group-hover:bg-[#1a1a1a] text-white font-bold text-sm uppercase tracking-wide transition-all flex items-center justify-between">
+                            <span>Do you have unclaimed rewards?</span>
+                            <span className="text-orange-500">{showUnclaimed ? '−' : '+'}</span>
+                          </div>
                         </button>
 
                         {showUnclaimed && (
@@ -468,36 +474,36 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
                   {activeTab === "presets" && (
                     <section className="space-y-4 pt-4">
                       <div className="flex flex-col gap-4">
-                        <button 
+                        <button
                           onClick={() => handleLoadPreset(DEFAULT_SETTINGS)}
                           className="flex flex-col items-start p-4 bg-black/40 border border-white/10 rounded-lg hover:border-[var(--brawl-blue)] hover:bg-white/5 transition-all group"
                         >
-                          <span className="text-lg font-black text-[var(--brawl-blue)] group-hover:text-white uppercase">Default (F2P Active)</span>
+                          <span className="text-lg font-black text-[var(--brawl-blue)] group-hover:text-white uppercase">Default (Active F2P)</span>
                           <span className="text-xs font-bold text-white/50 uppercase">Plays daily, finishes quests, F2P only</span>
                         </button>
 
-                        <button 
+                        <button
                           onClick={() => handleLoadPreset(ACTIVE_LOW_SPENDER_SETTINGS)}
                           className="flex flex-col items-start p-4 bg-black/40 border border-white/10 rounded-lg hover:border-green-500 hover:bg-white/5 transition-all group"
                         >
                           <span className="text-lg font-black text-green-500 group-hover:text-white uppercase">Active Low Spender</span>
-                          <span className="text-xs font-bold text-white/50 uppercase">Plays daily, buys all regular brawl passes, no ranked pass</span>
+                          <span className="text-xs font-bold text-white/50 uppercase">Plays daily, buys every other brawl pass</span>
                         </button>
 
-                        <button 
+                        <button
                           onClick={() => handleLoadPreset(ACTIVE_HIGH_SPENDER_SETTINGS)}
                           className="flex flex-col items-start p-4 bg-black/40 border border-white/10 rounded-lg hover:border-purple-500 hover:bg-white/5 transition-all group"
                         >
                           <span className="text-lg font-black text-purple-500 group-hover:text-white uppercase">Active High Spender</span>
-                          <span className="text-xs font-bold text-white/50 uppercase">Plays daily, buys all plus brawl passes, no ranked pass</span>
+                          <span className="text-xs font-bold text-white/50 uppercase">Plays daily, buys all plus brawl passes and ranked pass</span>
                         </button>
 
-                        <button 
+                        <button
                           onClick={() => handleLoadPreset(WHALE_SETTINGS)}
                           className="flex flex-col items-start p-4 bg-black/40 border border-white/10 rounded-lg hover:border-yellow-500 hover:bg-white/5 transition-all group"
                         >
                           <span className="text-lg font-black text-yellow-500 group-hover:text-white uppercase">Whale</span>
-                          <span className="text-xs font-bold text-white/50 uppercase">Plays daily, buys all passes, spends heavily</span>
+                          <span className="text-xs font-bold text-white/50 uppercase">Plays sometimes, buys all passes, spends heavily</span>
                         </button>
                       </div>
                     </section>

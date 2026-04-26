@@ -2,6 +2,7 @@ import { PlayerStats } from './brawlAPI';
 import gameMetadata from "@/data/gameMetadata.json";
 import brawlerRarities from "@/data/brawlers.json";
 import incomeData from "@/data/incomeSources.json";
+import valueConversionsData from "@/data/valueConversions.json";
 import { CHOICE_DELTAS, DailyActivityKey, EventsKey, EfficiencyKey } from "./constants";
 
 const {
@@ -331,8 +332,16 @@ function calculateDailyResources(player: PlayerStats, settings?: UserSettings): 
     let multiplier = getModification(source, computedModifiers);
 
     for (const resourceId in source.resources) {
-      if (resourceId in daily) {
-        const amount = source.resources[resourceId];
+      const amount = source.resources[resourceId];
+      const conversions = (valueConversionsData as any)[resourceId];
+
+      if (conversions) {
+        for (const targetResource in conversions) {
+          if (targetResource in daily) {
+            (daily as any)[targetResource] += (amount * conversions[targetResource] * multiplier) / daysPerCycle;
+          }
+        }
+      } else if (resourceId in daily) {
         (daily as any)[resourceId] += (amount * multiplier) / daysPerCycle;
       }
     }
@@ -362,7 +371,7 @@ function calculateDailyResources(player: PlayerStats, settings?: UserSettings): 
   const gemEffMult = typeof settings.gemEfficiencyChoice === 'number'
     ? settings.gemEfficiencyChoice
     : (CHOICE_DELTAS.efficiency[settings.gemEfficiencyChoice] ?? 1);
-    
+
   const progressGems = daily.gems * gemEffMult;
   // 1 Gem ~= 15-20 Coins equivalent depending on efficiency
   daily.coins += progressGems * 15;
@@ -386,7 +395,7 @@ function getModification(
   for (const key in incomeSource.modifiers) {
     const sourceValue = incomeSource.modifiers[key] ?? 1;
     let userValue = computedModifiers[key] ?? 1;
-    
+
     // Safety check for NaN or undefined in computed modifiers
     if (isNaN(userValue)) userValue = 1;
 

@@ -15,13 +15,14 @@
     "gems": 1
   },
   "brawlerKey": {
-    "brawlerKey": 1
+    "credits": 950
   },
   "resourceKey": {
-    "resourceKey": 1
+    "powerPoints": 2000
   },
   "buffieorKey": {
-    "buffiekey": 1
+    "coins": 1000,
+    "powerPoints": 2000
   },
   "starrDrop": {
     "coins": 70.4,
@@ -38,46 +39,25 @@
     "coins": 200,
     "powerPoints": 100,
     "credits": 300,
-    "bling": 30,
-    "gadget": 0.2,
-    "starPower": 0.1
+    "bling": 30
   },
   "legendaryDrop": {
     "coins": 700,
     "powerPoints": 200,
     "credits": 500,
-    "bling": 50,
-    "gadget": 0.3,
-    "starPower": 0.3,
-    "hypercharge": 0.1
+    "bling": 50
   },
   "chaosDrop": {
     "coins": 324.2,
     "powerPoints": 59.2,
-    "credits": 53,
-    "hypercharge": 0.01,
-    "buffie": 1
+    "credits": 53
   },
   "hyperchargeDrop": {
-    "hypercharge": 1
+    "coins": 5000
   },
   "rankedDrop": {
     "bling": 100
   },
   "xp": {},
-  "megaBox": {},
-  "fallback_gadget": {
-    "coins": 500
-  },
-  "fallback_gear": {},
-  "fallback_starpower": {
-    "coins": 1000
-  },
-  "fallback_hypercharge": {
-    "coins": 1000
-  },
-  "fallback_buffie": {
-    "coins": 1000,
-    "powerPoints": 1000
-  }
+  "megaBox": {}
 }

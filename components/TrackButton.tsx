@@ -37,12 +37,17 @@ export default function TrackButton({ tag }: TrackButtonProps) {
     <button
       onClick={handleToggle}
       disabled={loading}
-      className={`flex items-center gap-2 px-3 py-1.5 chamfer-xs transition-all ${
+      className={`chamfer-xs p-[1px] transition-all group block ${
         tracked 
-          ? "bg-[var(--brawl-yellow)]/10 text-[var(--brawl-yellow)] border border-[var(--brawl-yellow)]/30 hover:bg-[var(--brawl-yellow)]/20" 
-          : "bg-white/5 text-[var(--brawl-text-muted)] border border-white/10 hover:bg-white/10 hover:text-white"
+          ? "bg-[var(--brawl-yellow)]/30 hover:bg-[var(--brawl-yellow)]/50" 
+          : "bg-white/10 hover:bg-white/20"
       }`}
     >
+      <div className={`flex items-center gap-2 px-3 py-1.5 chamfer-xs transition-all w-full h-full ${
+        tracked
+          ? "bg-black/80 text-[var(--brawl-yellow)] group-hover:bg-black/60"
+          : "bg-black/80 text-[var(--brawl-text-muted)] group-hover:bg-black/60 group-hover:text-white"
+      }`}>
       <svg 
         width="16" 
         height="16" 
@@ -58,6 +63,7 @@ export default function TrackButton({ tag }: TrackButtonProps) {
       <span className="text-[10px] font-bold uppercase tracking-widest">
         {loading ? "..." : tracked ? "TRACKED" : "TRACK ACCOUNT"}
       </span>
+      </div>
     </button>
   );
 }

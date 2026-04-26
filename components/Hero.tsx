@@ -12,7 +12,7 @@ export default function HeroSection() {
   const supabase = createClient();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  
+
   // Placeholder for linked account status
   const [linkedAccount, setLinkedAccount] = useState<any>(null);
 
@@ -97,7 +97,7 @@ export default function HeroSection() {
         />
 
         <EstimateCard
-          title="Buy Every Brawl Pass"
+          title="Buying Every Brawl Pass"
           days={1095}
           disableGlow={true}
           borderColor="var(--card-pass-border)"
@@ -113,7 +113,7 @@ export default function HeroSection() {
         />
 
         <EstimateCard
-          title={`Buy Every Offer\nand Battle Pass`}
+          title={`Buying Every BrawlPass+ and Pro Pass`}
           days={343}
           disableGlow={true}
           borderColor="var(--card-whale-border)"
@@ -140,8 +140,8 @@ export default function HeroSection() {
                   Sign up to track your account&apos;s progression and get more accurate estimations
                 </p>
                 <div className="hex-btn-wrap mt-4">
-                  <button 
-                    className="hex-btn" 
+                  <button
+                    className="hex-btn"
                     onClick={() => router.push("/login")}
                   >
                     <div className="hex-btn-inner !py-2 !px-8 !text-sm">
@@ -155,16 +155,16 @@ export default function HeroSection() {
               <div className="bg-[var(--brawl-green)] chamfer-md p-[2px] shadow-[0_0_15px_rgba(76,255,80,0.1)] hover:shadow-[0_0_20px_rgba(76,255,80,0.2)] transition-shadow max-w-lg mx-auto">
                 <div className="p-4 sm:p-5 chamfer-md bg-[var(--card-whale-bg)] relative text-center">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(76,255,80,0.1),transparent_70%)] pointer-events-none"></div>
-                  
+
                   <h3 className="relative z-10 text-lg font-display font-bold text-[var(--brawl-green)] uppercase tracking-wide">
                     Link Your Brawl Stars Account
                   </h3>
                   <p className="relative z-10 text-[10px] font-bold text-[var(--brawl-green)]/70 uppercase tracking-widest mt-0.5">
                     Connect profile to start tracking
                   </p>
-                  
+
                   <div className="hex-btn-wrap mt-3 relative z-10 inline-block">
-                    <button 
+                    <button
                       className="hex-btn !bg-[var(--brawl-green)]"
                       onClick={() => router.push("/profile")}
                     >
