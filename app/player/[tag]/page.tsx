@@ -12,13 +12,20 @@ interface PlayerPageProps {
 export default async function PlayerPage({ params }: PlayerPageProps) {
   const { tag } = await params;
 
-  // 1. Fetch player data
-  let player;
-  try {
-    player = await getPlayer(tag);
-  } catch (err) {
-    console.error("Error in getPlayer:", err);
-  }
+  // 1. Parallelize initial data fetching
+  const [player, authData] = await Promise.all([
+    getPlayer(tag).catch(err => {
+      console.error("Error in getPlayer:", err);
+      return null;
+    }),
+    (async () => {
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      return { supabase, user };
+    })()
+  ]);
+
+  const { supabase, user } = authData;
 
   if (!player) {
     return (
@@ -33,11 +40,10 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
 
   // 2. Parse progression stats & optionally save to Supabase
   const stats = parseProgressionState(player);
-  try {
-    await saveDailySnapshot(tag, stats);
-  } catch (err) {
-    console.error("Error saving snapshot:", err);
-  }
+  // Fire-and-forget — snapshot is a side-effect, don't block render
+  saveDailySnapshot(tag, stats).catch((err) =>
+    console.error("Error saving snapshot:", err)
+  );
 
   const num = (n: number) => {
     if (n >= 1000000) return parseFloat((n / 1000000).toFixed(1)).toString() + 'M';
@@ -45,9 +51,6 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
     return n.toLocaleString();
   };
 
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  
   let isOwnAccount = false;
   let showLinkCta = true;
 

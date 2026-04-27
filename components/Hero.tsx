@@ -17,35 +17,36 @@ export default function HeroSection() {
   const [linkedAccount, setLinkedAccount] = useState<any>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    async function initAuth() {
+      const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
+      
       if (user) {
-        // Fetch real profile data to check linked status
-        supabase
+        const { data: profile } = await supabase
           .from('profiles')
           .select('is_verified')
           .eq('id', user.id)
-          .maybeSingle()
-          .then(({ data: profile }) => {
-            if (profile?.is_verified) {
-              setLinkedAccount(true);
-            }
-          });
+          .maybeSingle();
+        
+        setLinkedAccount(profile?.is_verified || false);
+      } else {
+        setLinkedAccount(null);
       }
+      
       setLoading(false);
-    });
+    }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    initAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        supabase
+        const { data: profile } = await supabase
           .from('profiles')
           .select('is_verified')
           .eq('id', session.user.id)
-          .maybeSingle()
-          .then(({ data: profile }) => {
-            setLinkedAccount(profile?.is_verified || false);
-          });
+          .maybeSingle();
+        setLinkedAccount(profile?.is_verified || false);
       } else {
         setLinkedAccount(null);
       }
@@ -150,7 +151,7 @@ export default function HeroSection() {
                   </button>
                 </div>
               </div>
-            ) : !linkedAccount ? (
+            ) : linkedAccount === false ? (
               /* Logged In but No Linked Account - Link Account Panel (Smaller version) */
               <div className="bg-[var(--brawl-green)] chamfer-md p-[2px] shadow-[0_0_15px_rgba(76,255,80,0.1)] hover:shadow-[0_0_20px_rgba(76,255,80,0.2)] transition-shadow max-w-lg mx-auto">
                 <div className="p-4 sm:p-5 chamfer-md bg-[var(--card-whale-bg)] relative text-center">

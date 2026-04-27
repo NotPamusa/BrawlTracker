@@ -79,7 +79,7 @@ function saveHistory(filePath, originalName) {
 
     const latestFile = path.join(HISTORY_DIR, existing[existing.length - 1]);
     const latestContent = fs.readFileSync(latestFile, 'utf8').trim();
-    
+
     if (currentContent === latestContent) {
       console.log(`Skipping archive: ${originalName} (no changes)`);
       return;
@@ -140,17 +140,17 @@ function syncConversions() {
   if (!parsed) return;
   const { lines, headers, separator } = parsed;
   const conversions = {};
-  
+
   // Headers are: [empty], coins, powerPoints, etc.
   const targetHeaders = headers.map(h => normalizeKey(h));
-  
+
   for (let i = 1; i < lines.length; i++) {
     const cells = lines[i].split(separator).map(c => c.trim());
     if (cells.length < 2) continue;
-    
+
     const sourceKey = normalizeKey(cells[0]);
     if (!sourceKey) continue;
-    
+
     conversions[sourceKey] = {};
     for (let j = 1; j < cells.length; j++) {
       const val = parseFloat(cells[j]);
@@ -160,7 +160,7 @@ function syncConversions() {
       }
     }
   }
-  
+
   if (Object.keys(conversions).length > 0) {
     fs.writeFileSync(OUTPUT_CONVERSION, JSON.stringify(conversions, null, 2));
     saveHistory(OUTPUT_CONVERSION, 'valueConversions.json');
@@ -203,27 +203,44 @@ function syncMetadata() {
 }
 
 async function syncBrawlers() {
+  let mapping = {};
   try {
     const res = await fetch("https://api.brawlapi.com/v1/brawlers");
-    if (!res.ok) {
-      console.warn("BrawlAPI error, skipping brawler sync.");
-      return;
+    if (res.ok) {
+      const data = await res.json();
+      if (data.list) {
+        data.list.forEach(b => {
+          mapping[b.name.toUpperCase()] = b.rarity.name;
+        });
+      }
+    } else {
+      console.warn("BrawlAPI error, proceeding to check backup.");
     }
-    const data = await res.json();
-    const mapping = {};
-    if (data.list) {
-      data.list.forEach(b => {
-        mapping[b.name.toUpperCase()] = b.rarity.name;
-      });
+  } catch (error) {
+    console.warn("Failed to fetch from BrawlAPI, proceeding to check backup:", error.message);
+  }
+
+  const backupFile = path.join(DATA_DIR, 'brawlersBackup.json');
+  if (fs.existsSync(backupFile)) {
+    try {
+      const backupData = JSON.parse(fs.readFileSync(backupFile, 'utf8'));
+      if (Object.keys(backupData).length > Object.keys(mapping).length) {
+        console.log(`Backup has more brawlers (${Object.keys(backupData).length}) than API (${Object.keys(mapping).length}). Using backup.`);
+        mapping = backupData;
+      }
+    } catch (e) {
+      console.warn("Could not read backup file:", e.message);
     }
-    
-    if (Object.keys(mapping).length > 0) {
+  }
+
+  if (Object.keys(mapping).length > 0) {
+    try {
       fs.writeFileSync(BRAWLERS_FILE, JSON.stringify(mapping, null, 2));
       saveHistory(BRAWLERS_FILE, 'brawlers.json');
       console.log(`Synced: ${BRAWLERS_FILE}`);
+    } catch (error) {
+      console.error("Failed to save brawlers:", error.message);
     }
-  } catch (error) {
-    console.error("Failed to sync brawlers:", error.message);
   }
 }
 

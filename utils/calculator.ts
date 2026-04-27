@@ -99,6 +99,11 @@ export interface ResourceList {
   credits: number;
   gems: number;
   bling: number;
+  // Item acquisition rates (expected items gained per day from random drops)
+  gadget: number;
+  starPower: number;
+  hypercharge: number;
+  buffie: number;
 }
 
 export function calculateDaysToMax(
@@ -106,56 +111,78 @@ export function calculateDaysToMax(
   mode: 'MAX' | 'FullMAX' = 'MAX',
   settings?: UserSettings
 ): CalculationResult {
-  let currentCoinsProgression = settings?.stash?.coins || 0;
-  let currentPPProgression = settings?.stash?.powerPoints || 0;
-  let currentCreditsProgression = settings?.stash?.credits || 0;
+  // ─── Stash: unspent resources the player currently holds ───
+  const stashCoins = settings?.stash?.coins || 0;
+  const stashPP = settings?.stash?.powerPoints || 0;
+  const stashCredits = settings?.stash?.credits || 0;
 
-  let nMaxCredits = 0;
+  // ─── Coin/PP already "spent" (invested into brawler progression) ───
+  let spentCoins = 0;
+  let spentPP = 0;
 
-  // Calculate Credits (Brawler Unlock) progression
-  const ownedBrawlerNames = new Set(player.brawlers.map(b => b.name.toUpperCase()));
+  // ─── Credits (brawler unlock cost) ───
+  let totalCreditCostAllBrawlers = 0;
+  let creditProgressionSpent = 0;
+
+  // Normalize names to ignore spaces, dashes, and other punctuation (e.g. "8-BIT" vs "8BIT", "MR. P" vs "MRP")
+  const normalizeName = (name: string) => name.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const ownedBrawlerNames = new Set(player.brawlers.map(b => normalizeName(b.name)));
 
   Object.entries(brawlerRarities).forEach(([name, rarity]) => {
     const cost = RARITY_COSTS[rarity] || 0;
-    nMaxCredits += cost;
-    if (ownedBrawlerNames.has(name.toUpperCase())) {
-      currentCreditsProgression += cost;
+    totalCreditCostAllBrawlers += cost;
+    if (ownedBrawlerNames.has(normalizeName(name))) {
+      creditProgressionSpent += cost;
     }
   });
 
-  // Determine target item counts per brawler depending on mode
+  // Save the initial total cost to return at the end (before simulation inflates it)
+  const initialTotalCreditCost = totalCreditCostAllBrawlers;
+  let currentTotalCreditCost = totalCreditCostAllBrawlers;
+
+  // ─── Target item counts per brawler (depends on mode) ───
+  // MAX  = competitive minimum (1 gadget, 1 SP)
+  // FullMAX = every single item (2 gadgets, 2 SPs)
   const targetGadgets = mode === 'FullMAX' ? 2 : 1;
   const targetSPs = mode === 'FullMAX' ? 2 : 1;
   const targetGears = 2;
   const targetHC = 1;
   const targetBuffies = 3;
 
-  let gadgetsSurplus = 0;
-  let spsSurplus = 0;
-  let gearsSurplus = 0;
-  let hcSurplus = 0;
-  let buffiesSurplus = 0;
+  // ─── Count owned items across all brawlers ───
+  let totalOwnedGadgets = 0;   // gadgets owned (capped at target per brawler)
+  let totalOwnedSPs = 0;
+  let totalOwnedGears = 0;
+  let totalOwnedHCs = 0;
+  let totalOwnedBuffies = 0;
 
-  // Iterate through brawlers to calculate coins/PP spent. Also surplus items.
+  // Raw totals (not capped) — needed for drop probability denominators
+  let totalRawGadgets = 0;
+  let totalRawSPs = 0;
+
   for (const brawler of player.brawlers) {
-    // Add coins/pp spent to current level
+    // Coins/PP invested into leveling
     const lvlIdx = brawler.power - 1;
-    currentPPProgression += PP_TO_LEVEL[lvlIdx] ?? 0;
-    currentCoinsProgression += COINS_TO_LEVEL[lvlIdx] ?? 0;
+    spentPP += PP_TO_LEVEL[lvlIdx] ?? 0;
+    spentCoins += COINS_TO_LEVEL[lvlIdx] ?? 0;
 
-    // Add cost of items (<item>Owned is number of this item the brawler has, counting up to the max amount we care about)
-    // Also count how many surplus items player
-    const gadgetsOwned = Math.min(brawler.gadgets?.length ?? 0, targetGadgets);
-    gadgetsSurplus += Math.max(0, (brawler.gadgets?.length ?? 0) - targetGadgets);
+    // Count items owned (capped to what we care about for this mode)
+    const rawGadgets = brawler.gadgets?.length ?? 0;
+    const rawSPs = brawler.starPowers?.length ?? 0;
+    totalRawGadgets += rawGadgets;
+    totalRawSPs += rawSPs;
 
-    const spOwned = Math.min(brawler.starPowers?.length ?? 0, targetSPs);
-    spsSurplus += Math.max(0, (brawler.starPowers?.length ?? 0) - targetSPs);
+    const gadgetsOwned = Math.min(rawGadgets, targetGadgets);
+    totalOwnedGadgets += gadgetsOwned;
+
+    const spOwned = Math.min(rawSPs, targetSPs);
+    totalOwnedSPs += spOwned;
 
     const gearsOwned = Math.min(brawler.gears?.length ?? 0, targetGears);
-    gearsSurplus += Math.max(0, (brawler.gears?.length ?? 0) - targetGears);
+    totalOwnedGears += gearsOwned;
 
     const hcOwned = Math.min(brawler.hyperCharges?.length ?? 0, targetHC);
-    hcSurplus += Math.max(0, (brawler.hyperCharges?.length ?? 0) - targetHC);
+    totalOwnedHCs += hcOwned;
 
     let buffiesOwnedCount = 0;
     if (brawler.buffies) {
@@ -164,53 +191,225 @@ export function calculateDaysToMax(
       if (brawler.buffies.hyperCharge) buffiesOwnedCount++;
     }
     const buffiesOwned = Math.min(buffiesOwnedCount, targetBuffies);
+    totalOwnedBuffies += buffiesOwned;
 
-    currentCoinsProgression += gadgetsOwned * COST_GADGET;
-    currentCoinsProgression += spOwned * COST_STAR_POWER;
-    currentCoinsProgression += gearsOwned * COST_GEAR;
-    currentCoinsProgression += hcOwned * COST_HYPERCHARGE;
-    currentCoinsProgression += buffiesOwned * COST_BUFFIE_COINS;
+    // Add coin cost of owned items to spent progression
+    spentCoins += gadgetsOwned * COST_GADGET;
+    spentCoins += spOwned * COST_STAR_POWER;
+    spentCoins += gearsOwned * COST_GEAR;
+    spentCoins += hcOwned * COST_HYPERCHARGE;
+    spentCoins += buffiesOwned * COST_BUFFIE_COINS;
 
-    currentPPProgression += buffiesOwned * COST_BUFFIE_PP;
-
+    spentPP += buffiesOwned * COST_BUFFIE_PP;
   }
 
-  // Capping the total buffies to what is released in-game
-  const totalTargetBuffies = mode === 'FullMAX' ? gameMetadata.totalBrawlers * targetBuffies : gameMetadata.releasedBuffieBrawlerCount * targetBuffies;
+  // ─── Max targets (total cost to fully max the game) ───
+  const totalBrawlers = gameMetadata.totalBrawlers;
+  // Buffie target depends on mode: FullMAX targets all brawlers, MAX only released buffie brawlers
+  const totalTargetBuffies = mode === 'FullMAX'
+    ? totalBrawlers * targetBuffies
+    : gameMetadata.releasedBuffieBrawlerCount * targetBuffies;
 
-  const nMaxCoins = (COINS_MAX + COST_GADGET * targetGadgets + COST_STAR_POWER * targetSPs + COST_GEAR * targetGears + COST_HYPERCHARGE * targetHC) * gameMetadata.totalBrawlers + COST_BUFFIE_COINS * totalTargetBuffies;
-  const nMaxPP = PP_MAX * gameMetadata.totalBrawlers + COST_BUFFIE_PP * totalTargetBuffies;
+  const nMaxCoins = (COINS_MAX + COST_GADGET * targetGadgets + COST_STAR_POWER * targetSPs
+    + COST_GEAR * targetGears + COST_HYPERCHARGE * targetHC) * totalBrawlers
+    + COST_BUFFIE_COINS * totalTargetBuffies;
+  const nMaxPP = PP_MAX * totalBrawlers + COST_BUFFIE_PP * totalTargetBuffies;
 
+  // Total current progression = spent + stash
+  const currentCoinsProgression = spentCoins + stashCoins;
+  const currentPPProgression = spentPP + stashPP;
+  const currentCreditsProgression = creditProgressionSpent + stashCredits;
 
-  // *** Linear progression rate: m ***
+  // ─── Daily income rates ───
+  const m_dailyResources = calculateDailyResources(player, settings);
+  const dailyCoins = m_dailyResources.coins || 0;
+  const dailyPP = m_dailyResources.powerPoints || 0;
+  const dailyCredits = m_dailyResources.credits || 0;
 
-  let m_dailyResources = calculateDailyResources(player, settings);
+  // Daily item acquisition rates from random drops
+  const dailyGadgetRate = m_dailyResources.gadget || 0;
+  const dailySPRate = m_dailyResources.starPower || 0;
+  const dailyHCRate = m_dailyResources.hypercharge || 0;
+  const dailyBuffieRate = m_dailyResources.buffie || 0;
 
+  // ─── Fallback reward values (from valueConversions) ───
+  // When a drop would give an item but all slots are full, these lesser rewards are given instead
+  const fallbackGadgetCoins = (valueConversionsData as any).fallback_gadget?.coins ?? 0;
+  const fallbackSPCoins = (valueConversionsData as any).fallback_starpower?.coins ?? 0;
+  const fallbackHCCoins = (valueConversionsData as any).fallback_hypercharge?.coins ?? 0;
+  const fallbackBuffieCoins = (valueConversionsData as any).fallback_buffie?.coins ?? 0;
+  const fallbackBuffiePP = (valueConversionsData as any).fallback_buffie?.powerPoints ?? 0;
 
-  const requiredCoins = Math.max(0, nMaxCoins - currentCoinsProgression);
-  const requiredPP = Math.max(0, nMaxPP - currentPPProgression);
-  const requiredCredits = Math.max(0, nMaxCredits - currentCreditsProgression);
+  // ─── Brawler inflation: new brawlers add items to the target every day ───
+  const BRAWLER_RELEASE_RATE = gameMetadata.brawlerReleaseRate; // ~1/30 brawlers per day
 
-  const mCoins = m_dailyResources.coins || 1;
-  const mPP = m_dailyResources.powerPoints || 1;
-  const mCredits = m_dailyResources.credits || 1;
+  // ─── SIMULATION: empty item slots + unowned item pools ───
+  // "Empty slots" = slots we still NEED to fill (target - owned). These are the "winning" outcomes.
+  // "Unowned items" = total items in game pool the player doesn't have. This is the denominator
+  //    for probability. Gadgets/SPs have 2 per brawler in the game regardless of target.
+  let emptyGadgetSlots = (totalBrawlers * targetGadgets) - totalOwnedGadgets;
+  let emptySPSlots = (totalBrawlers * targetSPs) - totalOwnedSPs;
+  let emptyHCSlots = (totalBrawlers * targetHC) - totalOwnedHCs;
+  let emptyBuffieSlots = totalTargetBuffies - totalOwnedBuffies;
 
-  const daysCoins = requiredCoins / mCoins;
-  const daysPowerPoints = requiredPP / mPP;
-  const daysCredits = requiredCredits / mCredits;
+  // Total unowned gadgets/SPs in the game (always 2 per brawler, not affected by mode target)
+  let unownedGadgets = (totalBrawlers * 2) - totalRawGadgets;
+  let unownedSPs = (totalBrawlers * 2) - totalRawSPs;
 
-  const maxDays = Math.ceil(Math.max(daysCoins, daysPowerPoints, daysCredits));
+  // ─── Fixed costs: levels, gears — items that are bought directly, not from random drops ───
+  // These are purely coin/PP costs that don't interact with the probability system
+  const totalLevelCoinCost = COINS_MAX * totalBrawlers;
+  const totalLevelPPCost = PP_MAX * totalBrawlers;
+  const totalGearCoinCost = COST_GEAR * targetGears * totalBrawlers;
+  const fixedCoinCostRemaining = Math.max(0,
+    (totalLevelCoinCost + totalGearCoinCost) - (spentCoins
+      - totalOwnedGadgets * COST_GADGET
+      - totalOwnedSPs * COST_STAR_POWER
+      - totalOwnedHCs * COST_HYPERCHARGE
+      - totalOwnedBuffies * COST_BUFFIE_COINS)
+  );
+  const fixedPPCostRemaining = Math.max(0,
+    totalLevelPPCost - (spentPP - totalOwnedBuffies * COST_BUFFIE_PP)
+  );
+
+  // ─── DAILY SIMULATION LOOP ───
+  // Each iteration = 1 day. We accumulate wealth and decay empty item slots
+  // until hoarded resources >= dynamic buyout cost of everything remaining.
+  let daysPassed = 0;
+  const MAX_SIMULATION_DAYS = 10000; // safety cap
+
+  // Hoarded = spendable stash the player accumulates over time
+  let hoardedCoins = stashCoins;
+  let hoardedPP = stashPP;
+  let hoardedCredits = stashCredits;
+
+  // Track coin/PP days separately for the breakdown display
+  let daysCoins = 0;
+  let daysPP = 0;
+  let daysCredits = 0;
+  let coinsSatisfied = false;
+  let ppSatisfied = false;
+  let creditsSatisfied = false;
+
+  while (daysPassed < MAX_SIMULATION_DAYS) {
+    // ── Step 1: Calculate dynamic buyout cost for THIS day ──
+    // This is what it would cost to buy every remaining item right now
+    const dynamicCoinCost = fixedCoinCostRemaining
+      + (emptyGadgetSlots * COST_GADGET)
+      + (emptySPSlots * COST_STAR_POWER)
+      + (emptyHCSlots * COST_HYPERCHARGE)
+      + (emptyBuffieSlots * COST_BUFFIE_COINS);
+
+    const dynamicPPCost = fixedPPCostRemaining
+      + (emptyBuffieSlots * COST_BUFFIE_PP);
+
+    const dynamicCreditCost = Math.max(0, currentTotalCreditCost - creditProgressionSpent);
+
+    // ── Step 2: Check if we can afford everything ──
+    if (!coinsSatisfied && hoardedCoins >= dynamicCoinCost) {
+      coinsSatisfied = true;
+      daysCoins = daysPassed;
+    }
+    if (!ppSatisfied && hoardedPP >= dynamicPPCost) {
+      ppSatisfied = true;
+      daysPP = daysPassed;
+    }
+    if (!creditsSatisfied && hoardedCredits >= dynamicCreditCost) {
+      creditsSatisfied = true;
+      daysCredits = daysPassed;
+    }
+
+    // All three resources satisfied → done
+    if (coinsSatisfied && ppSatisfied && creditsSatisfied) break;
+
+    daysPassed++;
+
+    // ── Step 3: Accumulate daily income ──
+    hoardedCoins += dailyCoins;
+    hoardedPP += dailyPP;
+    hoardedCredits += dailyCredits;
+
+    // ── Step 4: Expand the game (new brawler releases add items to targets) ──
+    // New brawlers add empty slots and expand the unowned pool
+    emptyGadgetSlots += BRAWLER_RELEASE_RATE * targetGadgets;
+    emptySPSlots += BRAWLER_RELEASE_RATE * targetSPs;
+    emptyHCSlots += BRAWLER_RELEASE_RATE * targetHC;
+    // Buffie inflation: only in FullMAX (MAX uses static releasedBuffieBrawlerCount)
+    if (mode === 'FullMAX') {
+      emptyBuffieSlots += BRAWLER_RELEASE_RATE * targetBuffies;
+    }
+
+    // Unowned pool always uses 2 gadgets/SPs per brawler (game total, not target)
+    unownedGadgets += BRAWLER_RELEASE_RATE * 2;
+    unownedSPs += BRAWLER_RELEASE_RATE * 2;
+
+    // New brawler inflation also increases the credit and fixed coin/PP targets
+    currentTotalCreditCost += BRAWLER_RELEASE_RATE * (COST_EPIC); // avg new brawler cost
+
+    // ── Step 5: Process random drops (probability of hitting a useful slot) ──
+    // For gadgets/SPs: each brawler has 2 total items in the pool.
+    // Probability a drop fills a USEFUL slot = (empty target slots) / (total unowned in pool)
+    // The probability is clamped to [0, 1] for safety.
+    const probUsefulGadget = unownedGadgets > 0
+      ? Math.min(1, Math.max(0, emptyGadgetSlots / unownedGadgets))
+      : 0;
+    const probUsefulSP = unownedSPs > 0
+      ? Math.min(1, Math.max(0, emptySPSlots / unownedSPs))
+      : 0;
+
+    // For HCs and buffies: no duplicates exist, so every drop fills a slot directly
+    // (probability is effectively 1 as long as slots remain)
+
+    // ── Step 6: Decay empty slots based on daily drop rates × probability ──
+    // Useful drops: fill a target slot (save us from buying it)
+    const usefulGadgetDrops = dailyGadgetRate * probUsefulGadget;
+    const usefulSPDrops = dailySPRate * probUsefulSP;
+
+    // Useless drops: hit a non-target slot, give fallback reward instead
+    const uselessGadgetDrops = dailyGadgetRate * (1 - probUsefulGadget);
+    const uselessSPDrops = dailySPRate * (1 - probUsefulSP);
+
+    // HC and buffie: 1 drop = 1 slot filled (no duplicates), fallback when slots empty
+    const usefulHCDrops = emptyHCSlots > 0 ? Math.min(dailyHCRate, emptyHCSlots) : 0;
+    const uselessHCDrops = dailyHCRate - usefulHCDrops;
+    const usefulBuffieDrops = emptyBuffieSlots > 0 ? Math.min(dailyBuffieRate, emptyBuffieSlots) : 0;
+    const uselessBuffieDrops = dailyBuffieRate - usefulBuffieDrops;
+
+    // Reduce empty slots by useful drops
+    emptyGadgetSlots = Math.max(0, emptyGadgetSlots - usefulGadgetDrops);
+    emptySPSlots = Math.max(0, emptySPSlots - usefulSPDrops);
+    emptyHCSlots = Math.max(0, emptyHCSlots - usefulHCDrops);
+    emptyBuffieSlots = Math.max(0, emptyBuffieSlots - usefulBuffieDrops);
+
+    // Also reduce unowned pool (any drop removes from the global pool)
+    unownedGadgets = Math.max(0, unownedGadgets - dailyGadgetRate);
+    unownedSPs = Math.max(0, unownedSPs - dailySPRate);
+
+    // ── Step 7: Add fallback reward coins/PP from useless drops ──
+    hoardedCoins += uselessGadgetDrops * fallbackGadgetCoins;
+    hoardedCoins += uselessSPDrops * fallbackSPCoins;
+    hoardedCoins += uselessHCDrops * fallbackHCCoins;
+    hoardedCoins += uselessBuffieDrops * fallbackBuffieCoins;
+    hoardedPP += uselessBuffieDrops * fallbackBuffiePP;
+  }
+
+  // If loop exhausted without satisfying, use daysPassed
+  if (!coinsSatisfied) daysCoins = daysPassed;
+  if (!ppSatisfied) daysPP = daysPassed;
+  if (!creditsSatisfied) daysCredits = daysPassed;
+
+  const maxDays = Math.ceil(Math.max(daysCoins, daysPP, daysCredits));
 
   return {
     daysCoins: Math.ceil(daysCoins),
-    daysPowerPoints: Math.ceil(daysPowerPoints),
+    daysPowerPoints: Math.ceil(daysPP),
     daysCredits: Math.ceil(daysCredits),
     maxDays,
     nMaxCoins,
     currentCoins: currentCoinsProgression,
     nMaxPP,
     currentPP: currentPPProgression,
-    nMaxCredits,
+    nMaxCredits: initialTotalCreditCost,
     currentCredits: currentCreditsProgression
   };
 }
@@ -314,7 +513,11 @@ function calculateDailyResources(player: PlayerStats, settings?: UserSettings): 
     powerPoints: 0,
     credits: 0,
     gems: 0,
-    bling: 0
+    bling: 0,
+    gadget: 0,
+    starPower: 0,
+    hypercharge: 0,
+    buffie: 0
   };
   //just need player stats for rank and trophies maybe in the future
 

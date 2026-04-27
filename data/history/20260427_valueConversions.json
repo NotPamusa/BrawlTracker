@@ -15,13 +15,13 @@
     "gems": 1
   },
   "brawlerKey": {
-    "credits": 950
+    "brawlerKey": 1
   },
   "resourceKey": {
     "resourceKey": 1
   },
-  "buffieKey": {
-    "buffie": 1
+  "buffieorKey": {
+    "buffiekey": 1
   },
   "starrDrop": {
     "coins": 70.4,

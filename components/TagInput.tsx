@@ -32,42 +32,46 @@ export default function TagInput({ variant = "hero" }: TagInputProps) {
       if (user) {
         setUser(user);
         
-        // Fetch linked tag
-        supabase
-          .from('profiles')
-          .select('player_tag, is_verified')
-          .eq('id', user.id)
-          .maybeSingle()
-          .then(({ data: profile }) => {
-            if (profile?.is_verified && profile.player_tag) {
-              setLinkedTag(profile.player_tag);
-            }
-          });
+        // Parallelize data fetching
+        Promise.all([
+          // Fetch linked tag
+          supabase
+            .from('profiles')
+            .select('player_tag, is_verified')
+            .eq('id', user.id)
+            .maybeSingle(),
+          // Fetch tracked accounts
+          supabase
+            .from('tracked_accounts')
+            .select('player_tag')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false }),
+          // Fetch DB history
+          supabase
+            .from('search_history')
+            .select('player_tag')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(10)
+        ]).then(([profileRes, trackedRes, historyRes]) => {
+          const profile = profileRes.data;
+          const tracked = trackedRes.data;
+          const dbHistory = historyRes.data;
 
-        // Fetch tracked accounts
-        supabase
-          .from('tracked_accounts')
-          .select('player_tag')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .then(({ data: tracked }) => {
-            if (tracked) setTrackedTags(tracked.map(t => t.player_tag));
-          });
+          if (profile?.is_verified && profile.player_tag) {
+            setLinkedTag(profile.player_tag);
+          }
 
-        // Fetch DB history
-        supabase
-          .from('search_history')
-          .select('player_tag')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(10)
-          .then(({ data: dbHistory }) => {
-            if (dbHistory && dbHistory.length > 0) {
-              const tags = dbHistory.map(h => h.player_tag);
-              setHistory(tags);
-              localStorage.setItem("searchHistory", JSON.stringify(tags.slice(0, 5)));
-            }
-          });
+          if (tracked) {
+            setTrackedTags(tracked.map(t => t.player_tag));
+          }
+
+          if (dbHistory && dbHistory.length > 0) {
+            const tags = dbHistory.map(h => h.player_tag);
+            setHistory(tags);
+            localStorage.setItem("searchHistory", JSON.stringify(tags.slice(0, 5)));
+          }
+        });
       }
     });
 

@@ -48,7 +48,69 @@ export default function ProfilePage() {
     });
   }, [router, supabase]);
 
-  if (loading) return null;
+  if (loading) return (
+    <main className="flex flex-col flex-1 relative z-10 items-center pt-24 sm:pt-32 pb-16 px-4 sm:px-6">
+      <div className="w-full max-w-3xl animate-fade-in-up">
+        {/* Title skeleton */}
+        <div className="mb-8">
+          <div className="skeleton-pulse chamfer-sm h-9 w-48 rounded" />
+        </div>
+
+        {/* Linked account banner skeleton */}
+        <div className="mb-10">
+          <div className="bg-[var(--brawl-border)] chamfer-md p-[2px]">
+            <div className="chamfer-md bg-[var(--brawl-bg-elevated)] p-6 flex items-center gap-4">
+              <div className="skeleton-pulse w-12 h-12 rounded-full shrink-0" />
+              <div className="flex flex-col gap-2 flex-1">
+                <div className="skeleton-pulse chamfer-xs h-3 w-20 rounded" />
+                <div className="skeleton-pulse chamfer-xs h-6 w-40 rounded" />
+                <div className="skeleton-pulse chamfer-xs h-3 w-32 rounded" />
+              </div>
+              <div className="skeleton-pulse chamfer-sm h-9 w-20 rounded shrink-0" />
+            </div>
+          </div>
+        </div>
+
+        {/* Two-column detail cards skeleton */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {/* Account Details card */}
+          <div className="bg-[var(--brawl-border)] chamfer-md p-[2px]">
+            <div className="p-6 chamfer-md bg-[var(--brawl-bg-card)] flex flex-col gap-5">
+              <div className="skeleton-pulse chamfer-xs h-3 w-32 rounded mb-1" />
+              <div className="flex flex-col gap-2">
+                <div className="skeleton-pulse chamfer-xs h-3 w-20 rounded" />
+                <div className="skeleton-pulse chamfer-sm h-11 w-full rounded" />
+              </div>
+              <div className="flex flex-col gap-2">
+                <div className="skeleton-pulse chamfer-xs h-3 w-28 rounded" />
+                <div className="skeleton-pulse chamfer-sm h-11 w-full rounded" />
+              </div>
+              <div className="mt-2 flex justify-end">
+                <div className="skeleton-pulse chamfer-sm h-9 w-32 rounded" />
+              </div>
+            </div>
+          </div>
+
+          {/* Security card */}
+          <div className="bg-[var(--brawl-border)] chamfer-md p-[2px]">
+            <div className="p-6 chamfer-md bg-[var(--brawl-bg-card)] flex flex-col gap-5 h-full">
+              <div className="skeleton-pulse chamfer-xs h-3 w-20 rounded mb-1" />
+              <div className="flex flex-col gap-2">
+                <div className="skeleton-pulse chamfer-xs h-3 w-20 rounded" />
+                <div className="flex gap-2">
+                  <div className="skeleton-pulse chamfer-sm h-11 flex-1 rounded" />
+                  <div className="skeleton-pulse chamfer-sm h-11 w-20 rounded" />
+                </div>
+              </div>
+              <div className="mt-auto pt-8">
+                <div className="skeleton-pulse chamfer-sm h-11 w-full rounded" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  );
 
   return (
     <main className="flex flex-col flex-1 relative z-10 items-center pt-24 sm:pt-32 pb-16 px-4 sm:px-6">
