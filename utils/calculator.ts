@@ -1,4 +1,4 @@
-import { PlayerStats } from './brawlAPI';
+import { PlayerStats, RELEASED_BUFFIES_BRAWLER_COUNT } from './brawlAPI';
 import gameMetadata from "@/data/gameMetadata.json";
 import brawlerRarities from "@/data/brawlers.json";
 import incomeData from "@/data/incomeSources.json";
@@ -62,7 +62,8 @@ export interface UserSettings {
   nYearlyRankedPass_free: number;
   nYearlyRankedPass_regular: number;
   nYearlyBrawlPass_free: number;
-  stash: Record<string, number>;
+  stash: IncomeSource;
+  unclaimed: IncomeSource;
 }
 
 export interface CalculationMods {
@@ -99,6 +100,7 @@ export interface ResourceList {
   credits: number;
   gems: number;
   bling: number;
+  resourceKey: number;
   // Item acquisition rates (expected items gained per day from random drops)
   gadget: number;
   starPower: number;
@@ -112,9 +114,24 @@ export function calculateDaysToMax(
   settings?: UserSettings
 ): CalculationResult {
   // ─── Stash: unspent resources the player currently holds ───
-  const stashCoins = settings?.stash?.coins || 0;
-  const stashPP = settings?.stash?.powerPoints || 0;
-  const stashCredits = settings?.stash?.credits || 0;
+  const stashRes = settings?.stash
+    ? calculateFixedResources(settings.stash)
+    : { coins: 0, powerPoints: 0, credits: 0, gems: 0, bling: 0, gadget: 0, starPower: 0, hypercharge: 0, buffie: 0 } as ResourceList;
+
+  const unclaimedRes = settings?.unclaimed
+    ? calculateFixedResources(settings.unclaimed)
+    : { coins: 0, powerPoints: 0, credits: 0, gems: 0, bling: 0, gadget: 0, starPower: 0, hypercharge: 0, buffie: 0 } as ResourceList;
+
+  const stashCoins = stashRes.coins + unclaimedRes.coins;
+  const stashPP = stashRes.powerPoints + unclaimedRes.powerPoints;
+  const stashCredits = stashRes.credits + unclaimedRes.credits;
+  const stashGadgets = stashRes.gadget + unclaimedRes.gadget;
+  const stashGems = stashRes.gems + unclaimedRes.gems;  // unaccounted for (yet)
+  const stashBling = stashRes.bling + unclaimedRes.bling; // unaccounted for (yet)
+  const stashSPs = stashRes.starPower + unclaimedRes.starPower;
+  const stashHCs = stashRes.hypercharge + unclaimedRes.hypercharge;
+  const stashBuffies = stashRes.buffie + unclaimedRes.buffie;
+  const stashResourceKeys = stashRes.resourceKey + unclaimedRes.resourceKey;
 
   // ─── Coin/PP already "spent" (invested into brawler progression) ───
   let spentCoins = 0;
@@ -225,6 +242,7 @@ export function calculateDaysToMax(
   const dailyCoins = m_dailyResources.coins || 0;
   const dailyPP = m_dailyResources.powerPoints || 0;
   const dailyCredits = m_dailyResources.credits || 0;
+  const dailyResourceKeys = m_dailyResources.resourceKey || 0;
 
   // Daily item acquisition rates from random drops
   const dailyGadgetRate = m_dailyResources.gadget || 0;
@@ -256,6 +274,23 @@ export function calculateDaysToMax(
   let unownedGadgets = (totalBrawlers * 2) - totalRawGadgets;
   let unownedSPs = (totalBrawlers * 2) - totalRawSPs;
 
+  // Calculate the probability of getting a useful gadget/SP from the stash (happens daily during the simulation, this is just to add the stash)
+  const probUsefulGadgetRes = unownedGadgets > 0
+    ? Math.min(1, Math.max(0, emptyGadgetSlots / unownedGadgets))
+    : 0;
+  const probUsefulSPRes = unownedSPs > 0
+    ? Math.min(1, Math.max(0, emptySPSlots / unownedSPs))
+    : 0;
+
+  emptyGadgetSlots = Math.max(0, emptyGadgetSlots - probUsefulGadgetRes * stashGadgets);
+  emptySPSlots = Math.max(0, emptySPSlots - probUsefulSPRes * stashSPs);
+  unownedGadgets = Math.max(0, unownedGadgets - probUsefulGadgetRes * stashGadgets);
+  unownedSPs = Math.max(0, unownedSPs - probUsefulSPRes * stashSPs);
+  
+  // HC and Buffies have no duplicates, every drop fills a slot directly
+  emptyHCSlots = Math.max(0, emptyHCSlots - stashHCs);
+  emptyBuffieSlots = Math.max(0, emptyBuffieSlots - stashBuffies);
+
   // ─── Fixed costs: levels, gears — items that are bought directly, not from random drops ───
   // These are purely coin/PP costs that don't interact with the probability system
   const totalLevelCoinCost = COINS_MAX * totalBrawlers;
@@ -276,12 +311,13 @@ export function calculateDaysToMax(
   // Each iteration = 1 day. We accumulate wealth and decay empty item slots
   // until hoarded resources >= dynamic buyout cost of everything remaining.
   let daysPassed = 0;
-  const MAX_SIMULATION_DAYS = 10000; // safety cap
+  const MAX_SIMULATION_DAYS = 9999; // safety cap
 
   // Hoarded = spendable stash the player accumulates over time
   let hoardedCoins = stashCoins;
   let hoardedPP = stashPP;
   let hoardedCredits = stashCredits;
+  let hoardedResourceKeys = stashResourceKeys;
 
   // Track coin/PP days separately for the breakdown display
   let daysCoins = 0;
@@ -305,18 +341,49 @@ export function calculateDaysToMax(
 
     const dynamicCreditCost = Math.max(0, currentTotalCreditCost - creditProgressionSpent);
 
-    // ── Step 2: Check if we can afford everything ──
-    if (!coinsSatisfied && hoardedCoins >= dynamicCoinCost) {
-      coinsSatisfied = true;
-      daysCoins = daysPassed;
-    }
-    if (!ppSatisfied && hoardedPP >= dynamicPPCost) {
-      ppSatisfied = true;
-      daysPP = daysPassed;
-    }
-    if (!creditsSatisfied && hoardedCredits >= dynamicCreditCost) {
+    // ── Step 2: Check if we can afford everything (using optimal resourceKey allocation) ──
+    const coinDeficit = Math.max(0, dynamicCoinCost - hoardedCoins);
+    const ppDeficit = Math.max(0, dynamicPPCost - hoardedPP);
+    const creditDeficit = Math.max(0, dynamicCreditCost - hoardedCredits);
+
+    if (!creditsSatisfied && creditDeficit === 0) {
       creditsSatisfied = true;
       daysCredits = daysPassed;
+    }
+
+    if (!coinsSatisfied && !ppSatisfied) {
+      // Check if keys can cover BOTH deficits simultaneously
+      const keysNeeded = Math.ceil(coinDeficit / 2000) + Math.ceil(ppDeficit / 2000);
+      if (keysNeeded <= hoardedResourceKeys) {
+        coinsSatisfied = true;
+        ppSatisfied = true;
+        daysCoins = daysPassed;
+        daysPP = daysPassed;
+      } else {
+        // Can we satisfy one naturally?
+        if (coinDeficit === 0) {
+          coinsSatisfied = true;
+          daysCoins = daysPassed;
+        }
+        if (ppDeficit === 0) {
+          ppSatisfied = true;
+          daysPP = daysPassed;
+        }
+      }
+    } else if (!coinsSatisfied && ppSatisfied) {
+      // Only coins left, dump all keys into coins
+      const keysNeeded = Math.ceil(coinDeficit / 2000);
+      if (keysNeeded <= hoardedResourceKeys) {
+        coinsSatisfied = true;
+        daysCoins = daysPassed;
+      }
+    } else if (coinsSatisfied && !ppSatisfied) {
+      // Only PP left, dump all keys into PP
+      const keysNeeded = Math.ceil(ppDeficit / 2000);
+      if (keysNeeded <= hoardedResourceKeys) {
+        ppSatisfied = true;
+        daysPP = daysPassed;
+      }
     }
 
     // All three resources satisfied → done
@@ -328,6 +395,7 @@ export function calculateDaysToMax(
     hoardedCoins += dailyCoins;
     hoardedPP += dailyPP;
     hoardedCredits += dailyCredits;
+    hoardedResourceKeys += dailyResourceKeys;
 
     // ── Step 4: Expand the game (new brawler releases add items to targets) ──
     // New brawlers add empty slots and expand the unowned pool
@@ -336,15 +404,23 @@ export function calculateDaysToMax(
     emptyHCSlots += BRAWLER_RELEASE_RATE * targetHC;
     // Buffie inflation: only in FullMAX (MAX uses static releasedBuffieBrawlerCount)
     if (mode === 'FullMAX') {
-      emptyBuffieSlots += BRAWLER_RELEASE_RATE * targetBuffies;
+      emptyBuffieSlots += BRAWLER_RELEASE_RATE * targetBuffies
+        + Math.min(
+          3 / 30,
+          Math.min(
+            totalBrawlers * targetBuffies - (RELEASED_BUFFIES_BRAWLER_COUNT + (9 / 30 * daysPassed)),
+            0));
+      // Slope is newBrawlersRate * numBuffies
+      // except while new buffies are still being released (on average, 9 per month, a.k.a. a 6 brawler batch every update (2 months))
+      // 9/30 is hardcoded because once all buffies are released i'll just come in and remove this part of the code (unless i forget, but it's accounted for anyway)
     }
 
-    // Unowned pool always uses 2 gadgets/SPs per brawler (game total, not target)
+    // Gadget/sp inflation
     unownedGadgets += BRAWLER_RELEASE_RATE * 2;
     unownedSPs += BRAWLER_RELEASE_RATE * 2;
 
     // New brawler inflation also increases the credit and fixed coin/PP targets
-    currentTotalCreditCost += BRAWLER_RELEASE_RATE * (COST_EPIC); // avg new brawler cost
+    currentTotalCreditCost += BRAWLER_RELEASE_RATE * (totalBrawlers * totalCreditCostAllBrawlers) / totalBrawlers; // avg new brawler cost
 
     // ── Step 5: Process random drops (probability of hitting a useful slot) ──
     // For gadgets/SPs: each brawler has 2 total items in the pool.
@@ -365,7 +441,7 @@ export function calculateDaysToMax(
     const usefulGadgetDrops = dailyGadgetRate * probUsefulGadget;
     const usefulSPDrops = dailySPRate * probUsefulSP;
 
-    // Useless drops: hit a non-target slot, give fallback reward instead
+    // Useless drops: hit a non-target slot, give fallback reward instead (if you have every item)
     const uselessGadgetDrops = dailyGadgetRate * (1 - probUsefulGadget);
     const uselessSPDrops = dailySPRate * (1 - probUsefulSP);
 
@@ -385,9 +461,9 @@ export function calculateDaysToMax(
     unownedGadgets = Math.max(0, unownedGadgets - dailyGadgetRate);
     unownedSPs = Math.max(0, unownedSPs - dailySPRate);
 
-    // ── Step 7: Add fallback reward coins/PP from useless drops ──
-    hoardedCoins += uselessGadgetDrops * fallbackGadgetCoins;
-    hoardedCoins += uselessSPDrops * fallbackSPCoins;
+    // ── Step 7: Add fallback reward coins/PP from useless drops (check if player has all items for gadgets/SPs. If supercell add more of other items, also gotta add the check for them) ──
+    hoardedCoins += (unownedGadgets <= 0) ? uselessGadgetDrops * fallbackGadgetCoins : 0;
+    hoardedCoins += (unownedSPs <= 0) ? uselessSPDrops * fallbackSPCoins : 0;
     hoardedCoins += uselessHCDrops * fallbackHCCoins;
     hoardedCoins += uselessBuffieDrops * fallbackBuffieCoins;
     hoardedPP += uselessBuffieDrops * fallbackBuffiePP;
@@ -507,6 +583,43 @@ export function computeSettingDeltas(player: PlayerStats, settings: UserSettings
   };
 }
 
+/**
+ * Converts the resources in a fixed IncomeSource (like a stash or the trophy road rewards)
+ * into a flat ResourceList of base currencies and items.
+ * 
+ */
+function calculateFixedResources(source: IncomeSource): ResourceList {
+  const list: ResourceList = {
+    coins: 0,
+    powerPoints: 0,
+    credits: 0,
+    gems: 0,
+    bling: 0,
+    resourceKey: 0,
+    gadget: 0,
+    starPower: 0,
+    hypercharge: 0,
+    buffie: 0
+  };
+
+  for (const resourceId in source.resources) {
+    const amount = source.resources[resourceId];
+    const conversions = (valueConversionsData as any)[resourceId];
+
+    if (conversions) {
+      for (const targetResource in conversions) {
+        if (targetResource in list) {
+          (list as any)[targetResource] += amount * conversions[targetResource];
+        }
+      }
+    } else if (resourceId in list) {
+      (list as any)[resourceId] += amount;
+    }
+  }
+
+  return list;
+}
+
 function calculateDailyResources(player: PlayerStats, settings?: UserSettings): ResourceList {
   const daily: ResourceList = {
     coins: 0,
@@ -514,6 +627,7 @@ function calculateDailyResources(player: PlayerStats, settings?: UserSettings): 
     credits: 0,
     gems: 0,
     bling: 0,
+    resourceKey: 0,
     gadget: 0,
     starPower: 0,
     hypercharge: 0,
@@ -529,6 +643,7 @@ function calculateDailyResources(player: PlayerStats, settings?: UserSettings): 
   //foreach incomeSource inside sources, find modifier multiplier, and then multiply that by the incomesource (each resource)
   for (const sourceId in sources) {
     const source = sources[sourceId] as IncomeSource;
+    if (source.daysPerCycle === 0) continue;
     const daysPerCycle = source.daysPerCycle || 1;
 
     // source contains list of which modifiers we use. getModifications finds them in usersettings and returns the multiplied result.

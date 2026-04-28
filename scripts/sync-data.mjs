@@ -21,6 +21,19 @@ const RESOURCE_KEYS = [
   'xp', 'megaBox'
 ];
 
+/**
+ * Brawler data overrides for fixing API inconsistencies.
+ * Add names in UPPERCASE.
+ */
+const BRAWLER_OVERRIDES = {
+  renames: {
+    'GLOWBERT': 'GLOWY',
+  },
+  exclusions: [
+    'BUZZLIGHT_YEAR',
+  ]
+};
+
 function normalizeKey(key) {
   return key.toLowerCase()
     .trim()
@@ -210,7 +223,13 @@ async function syncBrawlers() {
       const data = await res.json();
       if (data.list) {
         data.list.forEach(b => {
-          mapping[b.name.toUpperCase()] = b.rarity.name;
+          let name = b.name.toUpperCase();
+
+          // Apply overrides
+          if (BRAWLER_OVERRIDES.exclusions.includes(name)) return;
+          if (BRAWLER_OVERRIDES.renames[name]) name = BRAWLER_OVERRIDES.renames[name];
+
+          mapping[name] = b.rarity.name;
         });
       }
     } else {
@@ -224,9 +243,19 @@ async function syncBrawlers() {
   if (fs.existsSync(backupFile)) {
     try {
       const backupData = JSON.parse(fs.readFileSync(backupFile, 'utf8'));
-      if (Object.keys(backupData).length > Object.keys(mapping).length) {
-        console.log(`Backup has more brawlers (${Object.keys(backupData).length}) than API (${Object.keys(mapping).length}). Using backup.`);
-        mapping = backupData;
+      
+      // Clean backup data as well in case it contains old names or excluded brawlers
+      const cleanedBackup = {};
+      Object.entries(backupData).forEach(([name, rarity]) => {
+        let n = name.toUpperCase();
+        if (BRAWLER_OVERRIDES.exclusions.includes(n)) return;
+        if (BRAWLER_OVERRIDES.renames[n]) n = BRAWLER_OVERRIDES.renames[n];
+        cleanedBackup[n] = rarity;
+      });
+
+      if (Object.keys(cleanedBackup).length > Object.keys(mapping).length) {
+        console.log(`Backup has more brawlers (${Object.keys(cleanedBackup).length}) than API (${Object.keys(mapping).length}). Using backup.`);
+        mapping = cleanedBackup;
       }
     } catch (e) {
       console.warn("Could not read backup file:", e.message);

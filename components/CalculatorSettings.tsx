@@ -29,7 +29,8 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
   const [nRankedPass_free, setNRankedPass_free] = useState(settings.nYearlyRankedPass_free ?? 4);
   const [nRankedPass_regular, setNRankedPass_regular] = useState(settings.nYearlyRankedPass_regular ?? 0);
 
-  const [stash, setStash] = useState<Record<string, number>>(settings.stash);
+  const [stash, setStash] = useState<Record<string, number>>(settings.stash?.resources ?? {});
+  const [unclaimed, setUnclaimed] = useState<Record<string, number>>(settings.unclaimed?.resources ?? {});
   const [showUnclaimed, setShowUnclaimed] = useState(false);
 
   // Sync local state if context settings change externally (e.g. on mount/load from storage)
@@ -47,7 +48,8 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
     setNBrawlPass_plus(settings.nYearlyBrawlPass_plus ?? 0);
     setNRankedPass_free(settings.nYearlyRankedPass_free ?? 4);
     setNRankedPass_regular(settings.nYearlyRankedPass_regular ?? 0);
-    setStash(settings.stash ?? {});
+    setStash(settings.stash?.resources ?? {});
+    setUnclaimed(settings.unclaimed?.resources ?? {});
   }, [settings]);
 
   const handleStashChange = (key: string, val: string) => {
@@ -58,7 +60,15 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
     }));
   };
 
-  const stashKeys = Object.keys(valueConversions).filter(k => k !== "" && k !== "xp" && k !== "megaBox");
+  const handleUnclaimedChange = (key: string, val: string) => {
+    const num = parseInt(val, 10);
+    setUnclaimed(prev => ({
+      ...prev,
+      [key]: isNaN(num) ? 0 : num
+    }));
+  };
+
+  const stashKeys = Object.keys(valueConversions).filter(k => k !== "" && k !== "xp");
 
   const close = () => setIsOpen(false);
 
@@ -76,11 +86,24 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
     setNBrawlPass_plus(preset.nYearlyBrawlPass_plus);
     setNRankedPass_free(preset.nYearlyRankedPass_free);
     setNRankedPass_regular(preset.nYearlyRankedPass_regular);
-    setStash(preset.stash);
+    setStash(preset.stash?.resources ?? {});
+    setUnclaimed(preset.unclaimed?.resources ?? {});
     setActiveTab("general");
   };
 
   const handleApply = () => {
+    const stashIncomeSource = {
+      daysPerCycle: 0,
+      resources: stash,
+      modifiers: {}
+    };
+
+    const unclaimedIncomeSource = {
+      daysPerCycle: 0,
+      resources: unclaimed,
+      modifiers: {}
+    };
+
     applyTuning({
       dailyActivityChoice: dailyActivityChoice as any,
       eventsChoice: eventsChoice as any,
@@ -96,7 +119,8 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
       nYearlyRankedPass_free: nRankedPass_free,
       nYearlyRankedPass_regular: nRankedPass_regular,
       nYearlyBrawlPass_free: 12 - nBrawlPass_regular - nBrawlPass_plus,
-      stash
+      stash: stashIncomeSource,
+      unclaimed: unclaimedIncomeSource
     });
     close();
   };
@@ -389,7 +413,8 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
 
                   {activeTab === "stash" && (() => {
                     const primaryStash = ['coins', 'powerPoints', 'gems'];
-                    const secondaryStash = stashKeys.filter(k => !primaryStash.includes(k));
+                    // The user wants all of these in unclaimed
+                    const unclaimedKeys = ['coins', 'powerPoints', 'gems', 'bling', 'credits', 'starrDrop', 'chaosDrop', 'brawlerKey', 'resourceKey', 'buffieKey', 'epicDrop', 'mythicDrop', 'legendaryDrop', 'megaBox', 'hyperchargeDrop', 'rankedDrop'];
 
                     return (
                       <section className="space-y-6 pt-4">
@@ -448,17 +473,19 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
 
                         {showUnclaimed && (
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 animate-fade-in-up">
-                            {secondaryStash.map(key => (
+                            {unclaimedKeys.map(key => (
                               <div key={key} className="space-y-2 group">
-                                <label className="text-[10px] font-black text-[var(--brawl-text-dim)] uppercase tracking-widest group-hover:text-white transition-colors block truncate">{key}</label>
+                                <label className="text-[10px] font-black text-[var(--brawl-text-dim)] uppercase tracking-widest group-hover:text-white transition-colors block truncate">
+                                  {key === 'powerPoints' ? 'Power Points' : key}
+                                </label>
                                 <div className="chamfer-sm p-[1.5px] bg-white/5 focus-within:bg-orange-500 transition-all shadow-inner">
                                   <div className="chamfer-sm bg-black/60 flex items-center">
                                     <input
                                       type="number"
                                       min="0"
                                       placeholder="0"
-                                      value={stash[key] === 0 ? '' : stash[key] || ''}
-                                      onChange={e => handleStashChange(key, e.target.value)}
+                                      value={unclaimed[key] === 0 ? '' : unclaimed[key] || ''}
+                                      onChange={e => handleUnclaimedChange(key, e.target.value)}
                                       className="w-full bg-transparent p-2.5 text-white font-black outline-none text-sm"
                                     />
                                   </div>

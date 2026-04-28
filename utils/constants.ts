@@ -42,7 +42,8 @@ export const DEFAULT_SETTINGS: UserSettings = {
   nYearlyBrawlPass_plus: 0,
   nYearlyRankedPass_free: 4,
   nYearlyRankedPass_regular: 0,
-  stash: {}
+  stash: { daysPerCycle: 0, resources: {}, modifiers: {} },
+  unclaimed: { daysPerCycle: 0, resources: {}, modifiers: {} }
 };
 
 export const ACTIVE_LOW_SPENDER_SETTINGS: UserSettings = {
@@ -60,7 +61,8 @@ export const ACTIVE_LOW_SPENDER_SETTINGS: UserSettings = {
   nYearlyBrawlPass_plus: 0,
   nYearlyRankedPass_free: 3,
   nYearlyRankedPass_regular: 1,
-  stash: {}
+  stash: { daysPerCycle: 0, resources: {}, modifiers: {} },
+  unclaimed: { daysPerCycle: 0, resources: {}, modifiers: {} }
 };
 
 export const ACTIVE_HIGH_SPENDER_SETTINGS: UserSettings = {
@@ -78,7 +80,8 @@ export const ACTIVE_HIGH_SPENDER_SETTINGS: UserSettings = {
   nYearlyBrawlPass_plus: 0,
   nYearlyRankedPass_free: 2,
   nYearlyRankedPass_regular: 2,
-  stash: {}
+  stash: { daysPerCycle: 0, resources: {}, modifiers: {} },
+  unclaimed: { daysPerCycle: 0, resources: {}, modifiers: {} }
 };
 
 export const WHALE_SETTINGS: UserSettings = {
@@ -96,5 +99,6 @@ export const WHALE_SETTINGS: UserSettings = {
   nYearlyBrawlPass_plus: 12,
   nYearlyRankedPass_free: 0,
   nYearlyRankedPass_regular: 4,
-  stash: {}
+  stash: { daysPerCycle: 0, resources: {}, modifiers: {} },
+  unclaimed: { daysPerCycle: 0, resources: {}, modifiers: {} }
 };
