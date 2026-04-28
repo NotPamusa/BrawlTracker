@@ -286,7 +286,7 @@ export function calculateDaysToMax(
   emptySPSlots = Math.max(0, emptySPSlots - probUsefulSPRes * stashSPs);
   unownedGadgets = Math.max(0, unownedGadgets - probUsefulGadgetRes * stashGadgets);
   unownedSPs = Math.max(0, unownedSPs - probUsefulSPRes * stashSPs);
-  
+
   // HC and Buffies have no duplicates, every drop fills a slot directly
   emptyHCSlots = Math.max(0, emptyHCSlots - stashHCs);
   emptyBuffieSlots = Math.max(0, emptyBuffieSlots - stashBuffies);
@@ -340,13 +340,14 @@ export function calculateDaysToMax(
       + (emptyBuffieSlots * COST_BUFFIE_PP);
 
     const dynamicCreditCost = Math.max(0, currentTotalCreditCost - creditProgressionSpent);
+    console.log("dynamicCreditCost: ", dynamicCreditCost, ", currentTotalCreditCost = ", currentTotalCreditCost, ", creditProgressionSpent = ", creditProgressionSpent);
 
     // ── Step 2: Check if we can afford everything (using optimal resourceKey allocation) ──
     const coinDeficit = Math.max(0, dynamicCoinCost - hoardedCoins);
     const ppDeficit = Math.max(0, dynamicPPCost - hoardedPP);
     const creditDeficit = Math.max(0, dynamicCreditCost - hoardedCredits);
-
-    if (!creditsSatisfied && creditDeficit === 0) {
+    console.log("creditDeficit", creditDeficit, ", credist satisfied ", creditsSatisfied);
+    if (!creditsSatisfied && creditDeficit <= 0) {
       creditsSatisfied = true;
       daysCredits = daysPassed;
     }
@@ -420,8 +421,8 @@ export function calculateDaysToMax(
     unownedSPs += BRAWLER_RELEASE_RATE * 2;
 
     // New brawler inflation also increases the credit and fixed coin/PP targets
-    currentTotalCreditCost += BRAWLER_RELEASE_RATE * (totalBrawlers * totalCreditCostAllBrawlers) / totalBrawlers; // avg new brawler cost
-
+    currentTotalCreditCost += BRAWLER_RELEASE_RATE * (totalCreditCostAllBrawlers / totalBrawlers); // avg new brawler cost
+    console.log("BRAWLER RELEASE RATE = ", BRAWLER_RELEASE_RATE, " TOTAL BRAWLERS = ", totalBrawlers, " AVG NEW BRAWLER COST = ", totalCreditCostAllBrawlers / totalBrawlers, "CREDIT PROGRESSION = ", creditProgressionSpent, " CURRENT TOTAL CREDIT COST = ", currentTotalCreditCost, " CURRENT TOTAL CREDIT COST INCREASE = ", BRAWLER_RELEASE_RATE * (totalBrawlers * totalCreditCostAllBrawlers) / totalBrawlers);
     // ── Step 5: Process random drops (probability of hitting a useful slot) ──
     // For gadgets/SPs: each brawler has 2 total items in the pool.
     // Probability a drop fills a USEFUL slot = (empty target slots) / (total unowned in pool)
