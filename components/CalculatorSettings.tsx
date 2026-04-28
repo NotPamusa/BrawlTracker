@@ -9,7 +9,7 @@ import { DEFAULT_SETTINGS, ACTIVE_LOW_SPENDER_SETTINGS, ACTIVE_HIGH_SPENDER_SETT
 export default function CalculatorSettings({ player }: { player: PlayerStats }) {
   const { settings, applyTuning } = useSettings();
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"general" | "stash" | "presets">("general");
+  const [activeTab, setActiveTab] = useState<"general" | "preferences" | "stash" | "presets">("general");
 
   // Local state for the form, initialized from context settings
   const [dailyActivityChoice, setDailyActivityChoice] = useState(settings.dailyActivityChoice ?? "daily");
@@ -51,6 +51,24 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
     setStash(settings.stash?.resources ?? {});
     setUnclaimed(settings.unclaimed?.resources ?? {});
   }, [settings]);
+
+  // Handle Escape key to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+    };
+    if (isOpen) {
+      window.addEventListener("keydown", handleEscape);
+      // Prevent scrolling when modal is open
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      window.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
 
   const handleStashChange = (key: string, val: string) => {
     const num = parseInt(val, 10);
@@ -157,17 +175,23 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
       </div>
 
       {isOpen && (
-        <div className="fixed inset-0 z-[10000] flex justify-center items-center p-4 bg-black/80 backdrop-blur-md overflow-hidden">
-          <div className="relative w-full max-w-2xl animate-fade-in-up">
+        <div
+          className="fixed inset-0 z-[10000] flex justify-center items-start p-4 pt-16 bg-black/80 backdrop-blur-md overflow-hidden"
+          onClick={close}
+        >
+          <div
+            className="relative w-full max-w-2xl animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Pop-up Border Wrapper */}
             <div className="chamfer-md bg-white/20 p-[2px] shadow-[0_0_80px_rgba(0,0,0,0.9)]">
               <div className="chamfer-md w-full bg-[var(--brawl-bg-card)] relative flex flex-col max-h-[90vh]">
                 {/* Header */}
-                <div className="p-5 bg-white/5 border-b-2 border-white/10 flex justify-between items-center z-10 backdrop-blur-md">
+                <div className="px-3 py-3 bg-white/5 border-b-2 border-white/10 flex items-center justify-center relative z-10 backdrop-blur-md">
                   <h2 className="text-2xl font-display font-black text-[var(--brawl-yellow)] drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)] uppercase tracking-normal">PREDICTION TUNING</h2>
                   <button
                     onClick={close}
-                    className="w-10 h-10 flex items-center justify-center bg-red-500/20 text-red-500 hover:bg-red-600 hover:text-white rounded-lg transition-all text-2xl font-black shadow-inner border border-red-500/30 active:scale-90"
+                    className="absolute right-3 w-10 h-10 flex items-center justify-center bg-red-500/20 text-red-500 hover:bg-red-600 hover:text-white rounded-lg transition-all text-2xl font-black shadow-inner border border-red-500/30 active:scale-90"
                   >
                     ×
                   </button>
@@ -182,14 +206,20 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
                     General
                   </button>
                   <button
+                    onClick={() => setActiveTab("preferences")}
+                    className={`flex-1 py-3 transition-colors border-l border-white/5 ${activeTab === "preferences" ? "bg-[var(--brawl-blue)] text-white shadow-[inset_0_-3px_0_rgba(255,255,255,0.3)]" : "hover:bg-white/10 hover:text-white"}`}
+                  >
+                    Preferences
+                  </button>
+                  <button
                     onClick={() => setActiveTab("stash")}
-                    className={`flex-1 py-3 transition-colors border-l border-white/5 ${activeTab === "stash" ? "bg-orange-600 text-white shadow-[inset_0_-3px_0_rgba(255,255,255,0.3)]" : "hover:bg-white/10 hover:text-white"}`}
+                    className={`flex-1 py-3 transition-colors border-l border-white/5 ${activeTab === "stash" ? "bg-[var(--brawl-blue)] text-white shadow-[inset_0_-3px_0_rgba(255,255,255,0.3)]" : "hover:bg-white/10 hover:text-white"}`}
                   >
                     Stash
                   </button>
                   <button
                     onClick={() => setActiveTab("presets")}
-                    className={`flex-1 py-3 transition-colors border-l border-white/5 ${activeTab === "presets" ? "bg-purple-600 text-white shadow-[inset_0_-3px_0_rgba(255,255,255,0.3)]" : "hover:bg-white/10 hover:text-white"}`}
+                    className={`flex-1 py-3 transition-colors border-l border-white/5 ${activeTab === "presets" ? "bg-[var(--brawl-blue)] text-white shadow-[inset_0_-3px_0_rgba(255,255,255,0.3)]" : "hover:bg-white/10 hover:text-white"}`}
                   >
                     Presets
                   </button>
@@ -411,29 +441,33 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
                     </>
                   )}
 
+                  {activeTab === "preferences" && (
+                    <section className="space-y-6">
+                      <h3 className="text-xl font-display font-black text-white border-b-2 border-[var(--brawl-blue)] pb-1 inline-block uppercase tracking-normal">Preferences</h3>
+                      <p className="text-white/60">here go calculation preferences like how many gadgets/gears/etc the user wants to end up with. maybe also how they spend their coins? not sure yet.</p>
+                    </section>
+                  )}
+
                   {activeTab === "stash" && (() => {
                     const primaryStash = ['coins', 'powerPoints', 'gems'];
                     // The user wants all of these in unclaimed
                     const unclaimedKeys = ['coins', 'powerPoints', 'gems', 'bling', 'credits', 'starrDrop', 'chaosDrop', 'brawlerKey', 'resourceKey', 'buffieKey', 'epicDrop', 'mythicDrop', 'legendaryDrop', 'megaBox', 'hyperchargeDrop', 'rankedDrop'];
 
                     return (
-                      <section className="space-y-6 pt-4">
-                        <div className="flex items-center justify-between border-b-2 border-orange-500 pb-1">
-                          <h3 className="text-xl font-display font-black text-white uppercase tracking-normal">Stash</h3>
-                          <span className="text-[10px] font-black bg-orange-500 text-black px-2 py-0.5 rounded animate-pulse">This data isn't shown by the Brawl API</span>
-                        </div>
-
+                      <section className="space-y-3">
+                        <h3 className="text-xl font-display font-black text-white border-b-2 border-[var(--brawl-orange)] pb-1 inline-block uppercase tracking-normal">Input resources</h3>
+                        <p>I can't access your held resources from the API, you can input them here to get a more accurate estimate</p>
                         <div className="grid grid-cols-1 gap-4">
                           {primaryStash.map(key => (
                             <div key={key} className="relative group">
                               <div className="chamfer-md p-[2px] bg-white/10 focus-within:bg-orange-500 transition-all shadow-inner">
                                 <div className="chamfer-md bg-black/60 flex items-center p-3 gap-4">
                                   {/* Resource Icon */}
-                                  <div className="w-12 h-12 shrink-0 rounded-full bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden p-1">
+                                  <div className="w-12 h-12 shrink-0 flex items-center justify-center overflow-hidden p-1">
                                     <img
                                       src={
                                         key === 'coins' ? '/icons/icon_gold_1.png' :
-                                          key === 'powerPoints' ? '/icons/icon_powerpoint_pile.webp' :
+                                          key === 'powerPoints' ? '/icons/icon_powerpoint.png' :
                                             key === 'gems' ? '/icons/icon_gems_pack_0080.png' :
                                               ''
                                       }
@@ -463,9 +497,9 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
 
                         <button
                           onClick={() => setShowUnclaimed(!showUnclaimed)}
-                          className="w-full chamfer-sm p-[1px] bg-white/10 hover:bg-orange-500/50 transition-all text-left group block"
+                          className="w-full rounded-xl p-[1px] bg-white/10 hover:bg-orange-500/50 transition-all text-left group block"
                         >
-                          <div className="chamfer-sm py-3 px-4 bg-[#111111] group-hover:bg-[#1a1a1a] text-white font-bold text-sm uppercase tracking-wide transition-all flex items-center justify-between">
+                          <div className="rounded-xl py-3 px-4 bg-[#111111] group-hover:bg-[#1a1a1a] text-white font-bold text-sm uppercase tracking-wide transition-all flex items-center justify-between">
                             <span>Do you have unclaimed rewards?</span>
                             <span className="text-orange-500">{showUnclaimed ? '−' : '+'}</span>
                           </div>
@@ -538,12 +572,14 @@ export default function CalculatorSettings({ player }: { player: PlayerStats }) 
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 bg-white/5 border-t border-white/10 flex justify-end gap-4 relative z-20">
+                <div className="p-3 bg-white/5 border-t border-white/10 flex justify-end gap-4 relative z-20">
                   <button
                     onClick={handleApply}
-                    className="chamfer-sm px-10 py-4 bg-gradient-to-b from-[var(--brawl-green)] to-[var(--brawl-green-dark,rgba(0,120,0,1))] text-white font-display font-black text-xl tracking-widest hover:brightness-110 active:translate-y-[2px] active:shadow-none transition-all shadow-[0_8px_0_rgba(0,0,0,0.5),0_8px_0_var(--brawl-green-dark,rgba(0,100,0,1))] border-t-2 border-white/20 uppercase"
+                    className="rounded-xl p-[1.5px] bg-white/20 hover:brightness-110 active:translate-y-[2px] active:shadow-none transition-all shadow-[0_6px_15px_rgba(0,0,0,0.5)] uppercase group"
                   >
-                    APPLY TUNING
+                    <div className="rounded-xl px-3 py-2 bg-gradient-to-b from-[var(--brawl-green)] to-[var(--brawl-green-dark,rgba(0,120,0,1))] text-white font-display font-black text-xl tracking-wide [text-shadow:0_2px_4px_rgba(0,0,0,1)]">
+                      APPLY SETTINGS
+                    </div>
                   </button>
                 </div>
               </div>

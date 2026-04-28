@@ -48,14 +48,13 @@
     "hypercharge": 0.163
   },
   "chaosDrop": {
-    "coins": 95.526168,
-    "powerPoints": 47.269808,
-    "credits": 11.1274344,
-    "bling": 1.655524,
-    "gadget": 0.04601592,
-    "starPower": 0.03606192,
-    "hypercharge": 0.0232734,
-    "buffie": 0.007821
+    "coins": 47.269808,
+    "powerPoints": 11.1274344,
+    "credits": 1.655524,
+    "buffiekey": 0.04601592,
+    "gear": 0.03606192,
+    "starPower": 0.0232734,
+    "hypercharge": 0.007821
   },
   "hyperchargeDrop": {
     "hypercharge": 1
@@ -64,14 +63,7 @@
     "bling": 100
   },
   "xp": {},
-  "megaBox": {
-    "coins": 180,
-    "powerPoints": 60,
-    "credits": 18,
-    "gadget": 0.05,
-    "starPower": 0.03,
-    "hypercharge": 0.01
-  },
+  "megaBox": {},
   "fallback_gadget": {
     "coins": 500
   },

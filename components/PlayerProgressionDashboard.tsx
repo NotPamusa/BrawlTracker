@@ -27,14 +27,57 @@ export default function PlayerProgressionDashboard({ player, stats, tag }: Playe
   // Recalculate whenever settings change
   const estimate = calculateDaysToMax(player, 'MAX', settings);
 
+  /**
+   * Formats a number to always show exactly 3 digits of precision for readability.
+   * Examples: 5.0001 -> 5.00, 91.426 -> 91.4, 712.34 -> 712, 71234 -> 71.2k
+   */
   const num = (n: number) => {
-    if (n >= 1000000) return parseFloat((n / 1000000).toFixed(1)).toString() + 'M';
-    if (n >= 1000) return Math.floor(n / 1000).toString() + 'k';
-    return n.toLocaleString();
+    if (n === 0) return "0";
+    if (n >= 1000000) {
+      const v = n / 1000000;
+      return (v < 10 ? v.toFixed(2) : v < 100 ? v.toFixed(1) : Math.floor(v).toString()) + 'M';
+    }
+    if (n >= 1000) {
+      const v = n / 1000;
+      return (v < 10 ? v.toFixed(2) : v < 100 ? v.toFixed(1) : Math.floor(v).toString()) + 'k';
+    }
+    return n < 10 ? n.toFixed(2) : n < 100 ? n.toFixed(1) : Math.floor(n).toString();
   };
 
-  const StatBox = ({ title, current, max, colorHex, valueLabel, iconUrl }: { title: string, current: number, max: number, colorHex: string, valueLabel?: string, iconUrl?: string }) => {
+  const StatBox = ({ title, current, max, colorHex, valueLabel, iconUrl, dailyRate }: { title: string, current: number, max: number, colorHex: string, valueLabel?: string, iconUrl?: string, dailyRate?: number }) => {
     const pct = Math.max(0, Math.min(100, max > 0 ? (current / max) * 100 : 100));
+
+    // Compute rate label: scale up until we get a readable number
+    let rateLabel: string | null = null;
+    if (dailyRate != null && isFinite(dailyRate) && dailyRate > 0 && pct < 100) {
+      // dailyRate is always units/day (coins/day, brawlers/day, etc.)
+      // We scale it up (weekly/monthly/yearly) if it's too small to show daily.
+      let rate = dailyRate;
+      let period = "daily";
+
+      if (rate < 1) {
+        rate *= 7;
+        period = "weekly";
+      }
+      if (rate < 1) {
+        rate *= (30 / 7);
+        period = "monthly";
+      }
+      if (rate < 1) {
+        rate *= 12;
+        period = "yearly";
+      }
+      if (rate < 1) {
+        rate *= 100;
+        period = "per century 💀";
+      }
+
+      const rounded = Math.floor(rate);
+      if (rounded > 0) {
+        rateLabel = `+${num(rate)} ${period}`;
+      }
+    }
+
     return (
       <div
         className="chamfer-sm p-[2px] h-fit md:h-full flex flex-col transition-all duration-300 hover:translate-y-[-2px]"
@@ -83,14 +126,25 @@ export default function PlayerProgressionDashboard({ player, stats, tag }: Playe
                 )}
               </div>
             </div>
-            {pct === 100 && (
-              <div className="absolute -bottom-1 right-0 text-[8px] font-black italic tracking-tighter text-yellow-500 uppercase leading-none drop-shadow-[0_0.5px_1px_rgba(0,0,0,1)] [text-shadow:0_0_2px_black] [-webkit-text-stroke:0.1px_black]">MAXED</div>
-            )}
+            <div className="flex justify-between items-center mt-1 min-h-[14px]">
+              {rateLabel ? (
+                <span
+                  className="text-[10px] font-black tracking-wide [text-shadow:0_1px_3px_rgba(0,0,0,0.8)]"
+                  style={{ color: colorHex }}
+                >
+                  {rateLabel}
+                </span>
+              ) : <span />}
+              {pct === 100 && (
+                <div className="text-[8px] font-black italic tracking-tighter text-yellow-500 uppercase leading-none drop-shadow-[0_0.5px_1px_rgba(0,0,0,1)] [text-shadow:0_0_2px_black] [-webkit-text-stroke:0.1px_black]">MAXED</div>
+              )}
+            </div>
           </div>
         </div>
       </div>
     );
   };
+
 
   return (
     <div className={`w-full transition-opacity duration-300 ${isApplying ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
@@ -121,46 +175,50 @@ export default function PlayerProgressionDashboard({ player, stats, tag }: Playe
             current={stats.brawlers_unlocked}
             max={gameMetadata.totalBrawlers}
             colorHex="#cbd5e1"
-            valueLabel="unlocked"
             iconUrl="/brawler_portraits/Shelly_portrait.png"
+            dailyRate={estimate.daysCredits / (gameMetadata.totalBrawlers - stats.brawlers_unlocked)}
           />
 
           <StatBox
             title="Coins Progress"
-            current={estimate.currentCoins}
+            current={estimate.startCoins}
             max={estimate.nMaxCoins}
             colorHex="#facc15"
             iconUrl="/icons/icon_gold_1.png"
+            dailyRate={estimate.dailyRate.coins}
           />
 
           <StatBox
             title="PP Progress"
-            current={estimate.currentPP}
+            current={estimate.startPP}
             max={estimate.nMaxPP}
             colorHex="#ec4899"
             iconUrl="/icons/icon_powerpoint_pile.webp"
+            dailyRate={estimate.dailyRate.powerPoints}
           />
 
           <StatBox
             title="Gadgets Unlocked"
             current={stats.total_gadgets}
-            max={stats.brawlers_unlocked * 2}
+            max={gameMetadata.totalBrawlers * 2}
             colorHex="#4ade80"
             iconUrl="/icons/gadget_base_empty.png"
+            dailyRate={estimate.dailyRate.gadget}
           />
 
           <StatBox
             title="Star Powers"
             current={stats.total_star_powers}
-            max={stats.brawlers_unlocked * 2}
+            max={gameMetadata.totalBrawlers * 2}
             colorHex="#facc15"
             iconUrl="/icons/starpower_base01_empty.png"
+            dailyRate={estimate.dailyRate.starPower}
           />
 
           <StatBox
             title="Gears Unlocked"
             current={stats.total_gears}
-            max={stats.brawlers_unlocked * 2}
+            max={gameMetadata.totalBrawlers * 2}
             colorHex="#22d3ee"
             iconUrl="/icons/gear_base_empty.png"
           />
@@ -168,9 +226,10 @@ export default function PlayerProgressionDashboard({ player, stats, tag }: Playe
           <StatBox
             title="Hypercharges"
             current={stats.total_hypercharges}
-            max={stats.brawlers_unlocked}
+            max={gameMetadata.totalBrawlers}
             colorHex="#c084fc"
             iconUrl="/icons/hypercharge_base_empty.png"
+            dailyRate={estimate.dailyRate.hypercharge}
           />
 
           <StatBox
@@ -179,6 +238,7 @@ export default function PlayerProgressionDashboard({ player, stats, tag }: Playe
             max={RELEASED_BUFFIES_BRAWLER_COUNT * 3}
             colorHex="#fb923c"
             iconUrl="/icons/vault_key_buffies.png"
+            dailyRate={estimate.dailyRate.buffie}
           />
         </div>
       </div>
@@ -204,9 +264,9 @@ export default function PlayerProgressionDashboard({ player, stats, tag }: Playe
             <span className="text-xl font-display font-bold text-[var(--brawl-cyan)]">
               {(() => {
                 const max = Math.max(estimate.daysCoins, estimate.daysPowerPoints, estimate.daysCredits);
-                if (max === estimate.daysCoins) return `${num(Math.max(estimate.nMaxCoins - estimate.currentCoins, 0))} Coins`;
-                if (max === estimate.daysPowerPoints) return `${num(Math.max(estimate.nMaxPP - estimate.currentPP, 0))} PP`;
-                return `${num(Math.max(estimate.nMaxCredits - estimate.currentCredits, 0))} Credits`;
+                if (max === estimate.daysCoins) return `${num(Math.max(estimate.nMaxCoins - estimate.finalCoins, 0))} Coins`;
+                if (max === estimate.daysPowerPoints) return `${num(Math.max(estimate.nMaxPP - estimate.finalPP, 0))} PP`;
+                return `${num(Math.max(estimate.nMaxCredits - estimate.finalCredits, 0))} Credits`;
               })()}
             </span>
           </div>

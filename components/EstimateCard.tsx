@@ -35,14 +35,14 @@ export default function EstimateCard({
       }}
     >
       {/* Outer Glow Border */}
-      <div 
+      <div
         className="chamfer-md p-[3px] h-full flex flex-col relative overflow-hidden"
         style={{
           background: `linear-gradient(135deg, ${borderColor} 0%, ${borderColorDim} 40%, ${borderColorDim} 60%, ${borderColor} 100%)`,
         }}
       >
         {/* Animated Sweep Effect */}
-        <div 
+        <div
           className="absolute inset-0 opacity-20"
           style={{
             background: `linear-gradient(to right, transparent, ${accentColor}, transparent)`,
@@ -53,14 +53,14 @@ export default function EstimateCard({
 
         {/* Outer Background Area */}
         <div className="chamfer-md p-4 sm:p-5 h-full flex flex-col relative bg-[var(--brawl-bg-card)]">
-          
+
           <div className="flex-1 flex flex-col chamfer-sm p-[2px]" style={{ background: `linear-gradient(to bottom, rgba(255,255,255,0.05), transparent)` }}>
             {/* Inner Content Area */}
             <div className="chamfer-sm py-6 px-6 flex flex-col items-center justify-center text-center flex-1 bg-[var(--brawl-bg-elevated)] relative overflow-hidden">
-              
+
               {/* Radial Center Glow */}
-              <div 
-                className="absolute inset-0 opacity-20 pointer-events-none" 
+              <div
+                className="absolute inset-0 opacity-20 pointer-events-none"
                 style={{ background: `radial-gradient(circle at 50% 50%, ${accentColor}, transparent 70%)` }}
               />
 
@@ -83,11 +83,6 @@ export default function EstimateCard({
                 >
                   days
                 </span>
-              </div>
-
-              {/* Icon Decoration */}
-              <div className="flex items-center justify-center w-12 h-12 rounded-full border border-white/10 bg-black/40 mt-4 relative z-10">
-                {icon}
               </div>
             </div>
           </div>

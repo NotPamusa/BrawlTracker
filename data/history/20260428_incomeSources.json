@@ -205,9 +205,7 @@
         "challengesDelta": 1
       }
     },
-    "unclaimedRewards": {
-      "daysPerCycle": 0
-    },
+    "unclaimedRewards": {},
     "placeholder": {
       "resources": {
         "coins": 1,
@@ -225,8 +223,7 @@
         "chaosDrop": 1,
         "hyperchargeDrop": 1,
         "rankedDrop": 1
-      },
-      "daysPerCycle": 0
+      }
     }
   }
 }

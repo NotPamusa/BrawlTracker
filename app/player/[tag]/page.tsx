@@ -96,7 +96,7 @@ export default async function PlayerPage({ params }: PlayerPageProps) {
         </div>
 
         {showLinkCta && (
-          <Link 
+          <Link
             href={`/link-account?tag=${tag}`}
             className="chamfer-btn-primary chamfer-sm animate-fade-in-up"
           >

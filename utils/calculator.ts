@@ -40,11 +40,15 @@ export interface CalculationResult {
   daysCredits: number;
   maxDays: number;
   nMaxCoins: number;
-  currentCoins: number;
+  startCoins: number;
+  finalCoins: number;
   nMaxPP: number;
-  currentPP: number;
+  startPP: number;
+  finalPP: number;
   nMaxCredits: number;
-  currentCredits: number;
+  startCredits: number;
+  finalCredits: number;
+  dailyRate: ResourceList;
 }
 
 export interface UserSettings {
@@ -238,7 +242,10 @@ export function calculateDaysToMax(
   const currentCreditsProgression = creditProgressionSpent + stashCredits;
 
   // ─── Daily income rates ───
+  console.log("player", player);
+  console.log("settings", settings);
   const m_dailyResources = calculateDailyResources(player, settings);
+  console.log(m_dailyResources);
   const dailyCoins = m_dailyResources.coins || 0;
   const dailyPP = m_dailyResources.powerPoints || 0;
   const dailyCredits = m_dailyResources.credits || 0;
@@ -340,13 +347,11 @@ export function calculateDaysToMax(
       + (emptyBuffieSlots * COST_BUFFIE_PP);
 
     const dynamicCreditCost = Math.max(0, currentTotalCreditCost - creditProgressionSpent);
-    console.log("dynamicCreditCost: ", dynamicCreditCost, ", currentTotalCreditCost = ", currentTotalCreditCost, ", creditProgressionSpent = ", creditProgressionSpent);
 
     // ── Step 2: Check if we can afford everything (using optimal resourceKey allocation) ──
     const coinDeficit = Math.max(0, dynamicCoinCost - hoardedCoins);
     const ppDeficit = Math.max(0, dynamicPPCost - hoardedPP);
     const creditDeficit = Math.max(0, dynamicCreditCost - hoardedCredits);
-    console.log("creditDeficit", creditDeficit, ", credist satisfied ", creditsSatisfied);
     if (!creditsSatisfied && creditDeficit <= 0) {
       creditsSatisfied = true;
       daysCredits = daysPassed;
@@ -403,18 +408,19 @@ export function calculateDaysToMax(
     emptyGadgetSlots += BRAWLER_RELEASE_RATE * targetGadgets;
     emptySPSlots += BRAWLER_RELEASE_RATE * targetSPs;
     emptyHCSlots += BRAWLER_RELEASE_RATE * targetHC;
-    // Buffie inflation: only in FullMAX (MAX uses static releasedBuffieBrawlerCount)
-    if (mode === 'FullMAX') {
-      emptyBuffieSlots += BRAWLER_RELEASE_RATE * targetBuffies
-        + Math.min(
-          3 / 30,
-          Math.min(
-            totalBrawlers * targetBuffies - (RELEASED_BUFFIES_BRAWLER_COUNT + (9 / 30 * daysPassed)),
-            0));
-      // Slope is newBrawlersRate * numBuffies
-      // except while new buffies are still being released (on average, 9 per month, a.k.a. a 6 brawler batch every update (2 months))
-      // 9/30 is hardcoded because once all buffies are released i'll just come in and remove this part of the code (unless i forget, but it's accounted for anyway)
+
+    emptyBuffieSlots += BRAWLER_RELEASE_RATE * targetBuffies;
+
+    // Add buffies for old brawlers as they are released (3 brawlers per month = 9 buffies)
+    // Only in MAX mode, as FullMAX already includes them in the initial target
+    if (mode === 'MAX') {
+      const totalPossibleBuffies = totalBrawlers * targetBuffies;
+      const releasedOldBuffies = (RELEASED_BUFFIES_BRAWLER_COUNT * targetBuffies) + (9 / 30 * daysPassed);
+      const remainingOldBuffies = totalPossibleBuffies - releasedOldBuffies;
+      emptyBuffieSlots += Math.max(0, Math.min(9 / 30, remainingOldBuffies));
     }
+    // Slope is newBrawlersRate * numBuffies + batchReleaseRate
+    // 9/30 is hardcoded because once all buffies are released i'll just come in and remove this part of the code (unless i forget, but it's accounted for anyway)
 
     // Gadget/sp inflation
     unownedGadgets += BRAWLER_RELEASE_RATE * 2;
@@ -422,7 +428,6 @@ export function calculateDaysToMax(
 
     // New brawler inflation also increases the credit and fixed coin/PP targets
     currentTotalCreditCost += BRAWLER_RELEASE_RATE * (totalCreditCostAllBrawlers / totalBrawlers); // avg new brawler cost
-    console.log("BRAWLER RELEASE RATE = ", BRAWLER_RELEASE_RATE, " TOTAL BRAWLERS = ", totalBrawlers, " AVG NEW BRAWLER COST = ", totalCreditCostAllBrawlers / totalBrawlers, "CREDIT PROGRESSION = ", creditProgressionSpent, " CURRENT TOTAL CREDIT COST = ", currentTotalCreditCost, " CURRENT TOTAL CREDIT COST INCREASE = ", BRAWLER_RELEASE_RATE * (totalBrawlers * totalCreditCostAllBrawlers) / totalBrawlers);
     // ── Step 5: Process random drops (probability of hitting a useful slot) ──
     // For gadgets/SPs: each brawler has 2 total items in the pool.
     // Probability a drop fills a USEFUL slot = (empty target slots) / (total unowned in pool)
@@ -483,11 +488,15 @@ export function calculateDaysToMax(
     daysCredits: Math.ceil(daysCredits),
     maxDays,
     nMaxCoins,
-    currentCoins: currentCoinsProgression,
+    startCoins: spentCoins,
+    finalCoins: currentCoinsProgression,
     nMaxPP,
-    currentPP: currentPPProgression,
+    startPP: spentPP,
+    finalPP: currentPPProgression,
     nMaxCredits: initialTotalCreditCost,
-    currentCredits: currentCreditsProgression
+    startCredits: creditProgressionSpent,
+    finalCredits: currentCreditsProgression,
+    dailyRate: m_dailyResources
   };
 }
 

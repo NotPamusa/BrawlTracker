@@ -24,38 +24,38 @@
     "buffie": 1
   },
   "starrDrop": {
-    "coins": 31.7149,
-    "powerPoints": 14.2124,
-    "credits": 2.18929,
-    "bling": 0.6964,
-    "gadget": 0.00906,
-    "starPower": 0.007608,
-    "hypercharge": 0.00326
+    "coins": 70.4,
+    "powerPoints": 13.8,
+    "credits": 8.7
   },
   "epicDrop": {
-    "coins": 44.44,
-    "powerPoints": 22.22,
-    "credits": 8.34
+    "coins": 100,
+    "powerPoints": 70,
+    "credits": 100,
+    "bling": 10
   },
   "mythicDrop": {
-    "coins": 54.35,
-    "powerPoints": 43.48,
-    "credits": 10.875,
-    "gadget": 0.1812
+    "coins": 200,
+    "powerPoints": 100,
+    "credits": 300,
+    "bling": 30,
+    "gadget": 0.2,
+    "starPower": 0.1
   },
   "legendaryDrop": {
-    "starPower": 0.3804,
-    "hypercharge": 0.163
+    "coins": 700,
+    "powerPoints": 200,
+    "credits": 500,
+    "bling": 50,
+    "gadget": 0.3,
+    "starPower": 0.3,
+    "hypercharge": 0.1
   },
   "chaosDrop": {
-    "coins": 95.526168,
-    "powerPoints": 47.269808,
-    "credits": 11.1274344,
-    "bling": 1.655524,
-    "gadget": 0.04601592,
-    "starPower": 0.03606192,
-    "hypercharge": 0.0232734,
-    "buffie": 0.007821
+    "coins": 324.2,
+    "powerPoints": 59.2,
+    "credits": 53,
+    "hypercharge": 0.01
   },
   "hyperchargeDrop": {
     "hypercharge": 1
@@ -64,14 +64,7 @@
     "bling": 100
   },
   "xp": {},
-  "megaBox": {
-    "coins": 180,
-    "powerPoints": 60,
-    "credits": 18,
-    "gadget": 0.05,
-    "starPower": 0.03,
-    "hypercharge": 0.01
-  },
+  "megaBox": {},
   "fallback_gadget": {
     "coins": 500
   },

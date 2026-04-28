@@ -143,6 +143,14 @@ function syncIncome() {
       }
     }
   }
+
+  // Ensure daysPerCycle exists for all sources
+  Object.values(data.incomeSources).forEach(source => {
+    if (source.daysPerCycle === undefined) {
+      source.daysPerCycle = 0;
+    }
+  });
+
   fs.writeFileSync(OUTPUT_INCOME, JSON.stringify(data, null, 2));
   saveHistory(OUTPUT_INCOME, 'incomeSources.json');
   console.log(`Synced: ${OUTPUT_INCOME}`);
@@ -243,7 +251,7 @@ async function syncBrawlers() {
   if (fs.existsSync(backupFile)) {
     try {
       const backupData = JSON.parse(fs.readFileSync(backupFile, 'utf8'));
-      
+
       // Clean backup data as well in case it contains old names or excluded brawlers
       const cleanedBackup = {};
       Object.entries(backupData).forEach(([name, rarity]) => {
